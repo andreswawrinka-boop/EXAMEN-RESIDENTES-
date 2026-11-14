@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Examen de Residentes · Anestesiología</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ex:#0050FF;            /* color del examen elegido (se cambia por JS) */
+  --obs:#E0007A; --tra:#FF4A00; --h1:#00A651; --h2:#0050FF;
+  --blue:#0050FF; --violet:#7A00FF; --teal:#008F8F; --green:#00A651; --red:#E10600; --yellow:#FFC400;
+  --ink:#000; --line:#000; --bg:#FFFFFF;
+  --h:'Bricolage Grotesque',system-ui,sans-serif; --b:'Figtree',system-ui,sans-serif; --m:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--b);font-size:17px;line-height:1.5}
+button,select,input{font-family:inherit;font-size:inherit;color:#000}
+.screen{display:none;min-height:100vh}
+.screen.on{display:block}
+.wrap{max-width:980px;margin:0 auto;padding:22px 18px 70px}
+
+/* ── Encabezado ── */
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;background:#000;color:#fff}
+.brand b{font-family:var(--h);font-weight:800;letter-spacing:.02em}
+.brand span{font-size:14px;font-weight:600;color:#fff}
+.hero{position:relative;overflow:hidden;color:#fff;padding:34px 22px 30px;
+  background:linear-gradient(115deg,var(--h1) 0 48%,var(--h2) 48% 100%)}
+.hero h1{font-family:var(--h);font-weight:800;font-size:clamp(30px,5.2vw,52px);line-height:1.02;max-width:760px}
+.hero p{font-weight:600;margin-top:10px;font-size:18px;max-width:700px}
+.hero .tag{display:inline-block;background:#000;color:#fff;font-weight:800;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:6px 12px;border-radius:100px;margin-bottom:14px}
+.hero .dots{position:absolute;right:-30px;top:-30px;width:220px;height:220px;border-radius:50%;border:26px solid rgba(255,255,255,.28)}
+
+h2.t{font-family:var(--h);font-weight:800;font-size:28px;line-height:1.1;margin:26px 0 6px}
+.sub{font-size:16px;margin-bottom:14px}
+.lab{display:block;font-weight:800;font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+
+/* ── Selección de examen ── */
+.exgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0 8px}
+.excard{position:relative;cursor:pointer;border:none;border-radius:22px;padding:22px 20px 20px;text-align:left;color:#fff;min-height:170px;
+  box-shadow:0 0 0 0 #000;transition:transform .15s, box-shadow .15s}
+.excard:hover{transform:translateY(-3px)}
+.excard.on{box-shadow:0 0 0 5px #000}
+.excard .ic{font-size:40px;line-height:1}
+.excard .nm{font-family:var(--h);font-weight:800;font-size:25px;line-height:1.08;margin:10px 0 6px;color:#fff}
+.excard .ds{font-size:14.5px;font-weight:600;color:#fff}
+.excard .ck{position:absolute;right:16px;top:16px;width:34px;height:34px;border-radius:50%;background:#fff;color:#000;display:none;align-items:center;justify-content:center;font-weight:800}
+.excard.on .ck{display:flex}
+
+/* ── Formulario ── */
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.field{margin-bottom:14px}
+.field input[type=text],.field select{width:100%;padding:12px 14px;border:2.5px solid #000;border-radius:12px;background:#fff;font-weight:600}
+.field input:focus,.field select:focus{outline:4px solid var(--yellow);outline-offset:0}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600;margin-top:6px}
+.yrs{display:flex;gap:8px;flex-wrap:wrap}
+.yr{border:2.5px solid #000;background:#fff;border-radius:100px;padding:9px 18px;font-weight:800;cursor:pointer}
+.yr.on{background:#000;color:#fff}
+.err{display:none;margin-top:12px;background:var(--red);color:#fff;font-weight:700;padding:12px 14px;border-radius:12px}
+
+/* ── Botones ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:none;cursor:pointer;border-radius:14px;padding:15px 22px;font-weight:800;font-size:17px;color:#fff;background:#000;transition:transform .12s}
+.btn:hover{transform:translateY(-2px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.full{width:100%}
+.btn.ex{background:var(--ex)}
+.btn.line{background:#fff;color:#000;border:2.5px solid #000}
+.btn.sm{padding:10px 16px;font-size:15px;border-radius:11px}
+
+/* ── Instrucciones ── */
+.parts{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+.part{border-radius:18px;color:#fff;padding:18px}
+.part .k{font-family:var(--m);font-weight:800;font-size:13px;letter-spacing:.1em;background:#fff;color:#000;display:inline-block;padding:3px 10px;border-radius:100px}
+.part .n{font-family:var(--h);font-weight:800;font-size:21px;margin:8px 0 4px;color:#fff}
+.part .d{font-size:15px;font-weight:500;color:#fff}
+.part .w{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.part .w span{background:rgba(0,0,0,.28);color:#fff;font-weight:800;font-size:14px;padding:4px 10px;border-radius:100px}
+.pA{background:var(--blue)} .pB{background:var(--violet)} .pC{background:var(--teal)} .pD{background:var(--green)}
+.note{border:3px solid #000;border-radius:16px;padding:14px 16px;margin:14px 0;font-size:15.5px}
+.note.warn{border-color:var(--red)}
+.note b{font-weight:800}
+
+/* ── Barra superior del examen ── */
+.bar{position:sticky;top:0;z-index:20;color:#fff;background:var(--pc,#000)}
+.bar .in{max-width:980px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar .pn{font-family:var(--h);font-weight:800;font-size:20px;line-height:1.1;color:#fff}
+.bar .who{font-size:13.5px;font-weight:600;color:#fff}
+.bar .sp{flex:1}
+.clock{font-family:var(--m);font-weight:800;font-size:26px;background:#fff;color:#000;border-radius:12px;padding:4px 14px;min-width:112px;text-align:center}
+.clock.warn{background:var(--yellow)}
+.clock.dang{background:var(--red);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.tbar{height:7px;background:rgba(255,255,255,.35)}
+.tbar i{display:block;height:100%;background:#fff;transition:width 1s linear}
+
+/* ── Parte A: navegador ── */
+.qnav{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 18px}
+.qnav button{width:40px;height:40px;border-radius:10px;border:2.5px solid #000;background:#fff;font-weight:800;cursor:pointer;font-family:var(--m);font-size:14px}
+.qnav button.ans{background:#000;color:#fff}
+.qnav button.cur{outline:4px solid var(--yellow)}
+.qcard{border:3px solid #000;border-radius:20px;padding:22px}
+.qmeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.pill{display:inline-block;font-weight:800;font-size:13px;padding:4px 11px;border-radius:100px;background:var(--pc,#000);color:#fff}
+.pill.k{background:#000}
+.qtext{font-size:18.5px;font-weight:600;margin-bottom:16px}
+.opt{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;border:2.5px solid #000;background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;font-weight:500;font-size:16.5px}
+.opt .L{flex:0 0 34px;height:34px;border-radius:10px;border:2.5px solid #000;display:flex;align-items:center;justify-content:center;font-family:var(--m);font-weight:800}
+.opt:hover{background:#FFF3BF}
+.opt.sel{background:var(--pc,#000);color:#fff;border-color:var(--pc,#000)}
+.opt.sel .L{background:#fff;color:#000;border-color:#fff}
+.navrow{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.navrow .sp{flex:1}
+
+/* ── Parte B: V/F ── */
+.stem{border:3px solid #000;border-radius:20px;padding:18px 18px 8px;margin-bottom:16px}
+.stem h3{font-family:var(--h);font-weight:800;font-size:19px;margin-bottom:10px}
+.vf{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:2px dashed #000}
+.vf .tx{flex:1;font-weight:500}
+.vf .n{font-family:var(--m);font-weight:800;min-width:28px}
+.vfb{display:flex;gap:6px}
+.vfb button{width:50px;height:42px;border-radius:11px;border:2.5px solid #000;background:#fff;font-weight:800;cursor:pointer}
+.vfb button.on.v{background:var(--green);border-color:var(--green);color:#fff}
+.vfb button.on.f{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ── Parte C: EMQ ── */
+.emq{border:3px solid #000;border-radius:20px;padding:18px;margin-bottom:18px}
+.emq h3{font-family:var(--h);font-weight:800;font-size:20px}
+.emq .ins{font-size:15px;margin:4px 0 12px}
+.olist{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;background:var(--pc,#000);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.olist div{font-weight:600;font-size:15px;color:#fff}
+.olist b{font-family:var(--m);display:inline-block;width:26px;color:#fff}
+.eitem{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:2px dashed #000}
+.eitem .tx{flex:1;font-weight:500}
+.eitem select{width:120px;padding:9px 10px;border:2.5px solid #000;border-radius:11px;font-weight:800;background:#fff}
+.eitem select.has{background:var(--pc,#000);color:#fff;border-color:var(--pc,#000)}
+
+/* ── Parte D ── */
+.seq{border:3px solid #000;border-radius:20px;padding:18px;margin-bottom:18px}
+.seq h3{font-family:var(--h);font-weight:800;font-size:19px}
+.seq .ins{font-size:15px;margin:4px 0 12px}
+.srow{display:flex;gap:10px;align-items:center;border:2.5px solid #000;border-radius:13px;padding:9px 10px;margin-bottom:8px;background:#fff}
+.srow .p{flex:0 0 34px;height:34px;border-radius:10px;background:var(--pc,#000);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--m);font-weight:800}
+.srow .tx{flex:1;font-weight:600;font-size:15.5px}
+.srow .mv{display:flex;flex-direction:column;gap:4px}
+.srow .mv button{width:38px;height:28px;border-radius:8px;border:2px solid #000;background:#fff;font-weight:800;cursor:pointer;line-height:1}
+.srow .mv button:disabled{opacity:.25}
+.calc{border:3px solid #000;border-radius:20px;padding:18px;margin-bottom:14px}
+.calc .q{font-weight:600;margin-bottom:10px}
+.calc .row{display:flex;gap:10px;align-items:center}
+.calc input{width:170px;padding:12px;border:2.5px solid #000;border-radius:12px;font-family:var(--m);font-weight:800;font-size:18px}
+.calc .u{font-weight:800}
+
+/* ── Revisión y resultados ── */
+.score{border-radius:22px;color:#fff;padding:22px;text-align:center;background:var(--pc,#000)}
+.score .v{font-family:var(--m);font-weight:800;font-size:64px;line-height:1;color:#fff}
+.score .s{font-weight:700;color:#fff}
+.timeout{background:var(--red);color:#fff;font-weight:700;border-radius:14px;padding:12px 16px;margin:14px 0}
+.rv{border:2.5px solid #000;border-radius:16px;padding:14px 16px;margin-top:12px}
+.rv .h{display:flex;gap:10px;align-items:flex-start}
+.rv .mk{flex:0 0 30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+.ok{background:var(--green)} .bad{background:var(--red)}
+.rv .q{font-weight:700}
+.rv .a{font-size:15px;margin-top:6px}
+.rv .e{font-size:15px;margin-top:8px;border-left:5px solid var(--pc,#000);padding-left:10px}
+.tag2{display:inline-block;font-weight:800;font-size:13px;padding:2px 9px;border-radius:100px;color:#fff}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.sbox{border-radius:16px;color:#fff;padding:14px;text-align:center}
+.sbox .k{font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.sbox .v{font-family:var(--m);font-weight:800;font-size:34px;color:#fff}
+.sbox .x{font-size:13px;font-weight:600;color:#fff}
+.final{border-radius:24px;padding:26px;color:#fff;text-align:center;background:#000}
+.final .v{font-family:var(--m);font-weight:800;font-size:80px;line-height:1;color:#fff}
+.final .who{font-family:var(--h);font-weight:800;font-size:24px;color:#fff}
+.final .meta{font-weight:600;color:#fff;font-size:15px}
+#sheet{margin-top:14px}
+#sheet span{display:inline-block;padding:8px 16px;border-radius:100px;font-weight:800;color:#fff}
+.tbl{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
+.tbl th{background:#000;color:#fff;text-align:left;padding:8px 10px}
+.tbl td{border-bottom:2px solid #000;padding:8px 10px}
+
+/* ── Modal ── */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:22px;padding:24px;max-width:460px;width:100%;border:4px solid #000}
+.modal h4{font-family:var(--h);font-weight:800;font-size:22px;margin-bottom:8px}
+
+footer{text-align:center;font-size:13px;font-weight:600;padding:20px 12px 30px}
+
+@media (max-width:720px){
+  .exgrid,.parts,.fgrid{grid-template-columns:1fr}
+  .olist{grid-template-columns:1fr}
+  .sgrid{grid-template-columns:repeat(2,1fr)}
+  .clock{font-size:21px;min-width:92px}
+  .eitem{flex-direction:column;align-items:stretch}
+  .eitem select{width:100%}
+}
+@media print{
+  .bar,.btn,.brand,footer,.noprint{display:none!important}
+  .screen{display:none!important} #s-final{display:block!important}
+  .final,.sbox,.score{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ 1 · DATOS ═══════════ -->
+<section class="screen on" id="s-setup">
+  <div class="brand"><b>SUBRED SUROCCIDENTE · ANESTESIOLOGÍA</b><span>Coordinador: Dr. Geovanni Rodríguez</span></div>
+  <div class="hero">
+    <div class="dots"></div>
+    <div class="tag">Residentes de posgrado</div>
+    <h1>Evaluación de anestesiología para residentes</h1>
+    <p>Selección múltiple tipo MIR / USMLE · Verdadero-falso múltiple · Emparejamiento extendido · Secuencias y cálculos. Autocalificable y con envío automático de la nota.</p>
+  </div>
+  <div class="wrap">
+    <h2 class="t">1. Elija el examen</h2>
+    <div class="exgrid" id="exgrid"></div>
+
+    <h2 class="t">2. Datos del residente</h2>
+    <div class="fgrid">
+      <div class="field"><label class="lab" for="n1">Primer nombre *</label><input type="text" id="n1" autocomplete="off" placeholder="Ej: María"></div>
+      <div class="field"><label class="lab" for="a1">Primer apellido *</label><input type="text" id="a1" autocomplete="off" placeholder="Ej: García"></div>
+      <div class="field"><label class="lab" for="a2">Segundo apellido *</label><input type="text" id="a2" autocomplete="off" placeholder="Ej: López">
+        <label class="chk"><input type="checkbox" id="noa2" onchange="toggleA2()"> No tengo segundo apellido</label></div>
+    </div>
+    <div class="fgrid" style="grid-template-columns:2fr 1fr">
+      <div class="field"><label class="lab" for="uni">Universidad del posgrado *</label>
+        <select id="uni">
+          <option value="">— Seleccione —</option>
+          <option>Universidad San Martín</option><option>Universidad Nacional de Colombia</option>
+          <option>Fundación Universitaria Sanitas</option><option>Universidad Militar Nueva Granada</option>
+        </select>
+      </div>
+      <div class="field"><span class="lab">Año de residencia *</span>
+        <div class="yrs" id="yrs"><button type="button" class="yr" data-y="R1">R1</button><button type="button" class="yr" data-y="R2">R2</button><button type="button" class="yr" data-y="R3">R3</button></div></div>
+    </div>
+    <button class="btn ex full" onclick="toInstructions()">Continuar a las instrucciones →</button>
+    <div class="err" id="err"></div>
+  </div>
+  <footer>© 2026 Dr. Andrés Robayo C. — autor de la aplicación y del banco de preguntas · Coordinador del posgrado: Dr. Geovanni Rodríguez<br>Todos los derechos reservados (Ley 23 de 1982 y Decisión Andina 351 de 1993). Prohibida su reproducción, copia o distribución sin autorización del autor.</footer>
+</section>
+
+<!-- ═══════════ 2 · INSTRUCCIONES ═══════════ -->
+<section class="screen" id="s-instr">
+  <div class="bar" style="--pc:var(--ex)"><div class="in"><div><div class="pn" id="i-title"></div><div class="who" id="i-who"></div></div></div></div>
+  <div class="wrap">
+    <h2 class="t">Instrucciones</h2>
+    <p class="sub">El examen tiene <b>4 partes</b> en secuencia. Cada parte tiene su propio tiempo y se <b>CIERRA SOLA</b> cuando el tiempo se acaba: lo no respondido cuenta como incorrecto. Al entregar cada parte verá sus respuestas correctas e incorrectas con la explicación.</p>
+    <div class="parts" id="i-parts"></div>
+    <div class="note"><b>📊 Nota final sobre 5,0:</b> <span id="i-weights"></span></div>
+    <div class="note warn"><b>⚠️ Importante:</b> no recargue ni cierre la página durante el examen; se perdería el avance. Las preguntas y la posición de las respuestas cambian en cada examen. Al terminar, la nota se envía AUTOMÁTICAMENTE.</div>
+    <button class="btn ex full" onclick="startPart(0)">Entendido — iniciar Parte A →</button>
+  </div>
+</section>
+
+<!-- ═══════════ 3 · PARTE (genérica) ═══════════ -->
+<section class="screen" id="s-part">
+  <div class="bar" id="p-bar"><div class="in">
+    <div><div class="pn" id="p-title"></div><div class="who" id="p-who"></div></div>
+    <div class="sp"></div>
+    <div class="clock" id="p-clock">00:00</div>
+  </div><div class="tbar"><i id="p-tbar" style="width:100%"></i></div></div>
+  <div class="wrap">
+    <div id="p-body"></div>
+    <div style="margin-top:22px"><button class="btn full" id="p-submit" onclick="askSubmit()">Entregar esta parte →</button></div>
+  </div>
+</section>
+
+<!-- ═══════════ 4 · REVISIÓN DE PARTE ═══════════ -->
+<section class="screen" id="s-review">
+  <div class="bar" id="r-bar"><div class="in"><div><div class="pn" id="r-title"></div><div class="who" id="r-who"></div></div></div></div>
+  <div class="wrap">
+    <div id="r-timeout" class="timeout" style="display:none">⏰ Se acabó el tiempo: la parte se cerró automáticamente y lo no respondido cuenta como incorrecto.</div>
+    <div class="score" id="r-score"></div>
+    <div id="r-body"></div>
+    <div style="margin-top:22px"><button class="btn full" id="r-next" onclick="afterReview()"></button></div>
+  </div>
+</section>
+
+<!-- ═══════════ 5 · RESULTADO FINAL ═══════════ -->
+<section class="screen" id="s-final">
+  <div class="brand"><b>RESULTADO FINAL</b><span id="f-date"></span></div>
+  <div class="wrap">
+    <div class="final">
+      <div class="who" id="f-name"></div>
+      <div class="meta" id="f-meta"></div>
+      <div style="margin:16px 0 4px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;font-size:13px">Calificación final</div>
+      <div class="v" id="f-final"></div>
+      <div class="meta">sobre 5,0</div>
+      <div id="sheet"></div>
+    </div>
+    <div class="sgrid" id="f-grid"></div>
+    <h2 class="t" style="font-size:22px">Desempeño por subtema</h2>
+    <table class="tbl" id="f-sub"></table>
+    <div class="navrow noprint" style="margin-top:22px">
+      <button class="btn ex" onclick="descargarPDF()">📄 Descargar PDF de evidencia</button>
+      <span class="sp"></span>
+      <button class="btn" onclick="location.reload()">Nueva evaluación</button>
+    </div>
+  </div>
+  <footer>© 2026 Dr. Andrés Robayo C. — autor de la aplicación · Coordinador: Dr. Geovanni Rodríguez · Todos los derechos reservados (Ley 23 de 1982).</footer>
+</section>
+
+<!-- Modal de confirmación -->
+<div class="modal" id="modal"><div class="box">
+  <h4 id="m-t">¿Entregar esta parte?</h4>
+  <p id="m-s" style="margin-bottom:16px"></p>
+  <div class="navrow"><button class="btn line sm" onclick="closeModal()">Volver</button><span class="sp"></span><button class="btn sm" id="m-ok" onclick="closeModal();submitPart(false)">Sí, entregar</button></div>
+</div></div>
+
+<script>
+// ═══ CONEXIÓN CON GOOGLE SHEETS (misma URL /exec y clave del examen de estudiantes) ═══
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbz1a0UhMA1WdJeyUk3npQxNpyuaXJJxSwmtBLvJNfGBehg_1htyoiOZ4u9_F2LfFvSg/exec';
+const CLAVE_EXAMEN = 'examenanestesia2026';
+
+// ═══════════════════════════════════════════════════════════════════
+//  BANCO DE PREGUNTAS — RESIDENTES DE ANESTESIOLOGÍA
+//  Dr. Andrés Robayo C. · Subred Integrada de Servicios de Salud Suroccidente
+//  Las opciones se barajan en cada examen; la posición de la correcta se
+//  reparte EXACTAMENTE por igual entre A, B, C y D.
+// ═══════════════════════════════════════════════════════════════════
+const EXAMS = {
+ obs: {
+  id: 'obs',
+  titulo: 'Anestesia obstétrica y ginecológica',
+  corto: 'Obstetricia',
+  icono: '🤰',
+  color: '#00A651',
+  subtemas: {
+   fis: 'Cambios fisiológicos del embarazo',
+   card: 'Cardiopatía y embarazo',
+   rojo: 'Código rojo y hemorragia obstétrica',
+   neu: 'Analgesia peridural y anestesia para cesárea',
+   the: 'Trastornos hipertensivos del embarazo',
+   sep: 'Sepsis y choque en el embarazo'
+  },
+  // ── PARTE A · Selección múltiple de mejor respuesta (tipo MIR / USMLE) ──
+  sba: [
+   { s:'fis', q:'Primigesta de 38 semanas, sana, para cesárea bajo anestesia general por rechazo del neuroeje. Tras una preoxigenación adecuada e inducción de secuencia rápida, la SpO₂ desciende durante la apnea mucho más rápido que en una mujer no gestante. ¿Cuál es el mecanismo PRINCIPAL?',
+     o:['Menor capacidad residual funcional y mayor consumo de O₂','Menor capacidad vital por la elevación del diafragma','Mayor resistencia de la vía aérea por edema mucoso','Menor volumen corriente por la compresión del útero grávido'], a:0,
+     e:'La CRF cae ~20 % (menor volumen de reserva espiratorio y residual) y el consumo de O₂ aumenta 20–30 %: menos reserva y más consumo → desaturación rápida en apnea. La capacidad vital se conserva, el volumen corriente AUMENTA 30–45 % y la resistencia de la vía aérea disminuye por efecto de la progesterona.' },
+   { s:'fis', q:'¿Cuál de las siguientes gasometrías arteriales es NORMAL en una gestante sana de 36 semanas, respirando aire ambiente al nivel del mar?',
+     o:['pH 7,40 · PaCO₂ 40 mmHg · HCO₃⁻ 24 mEq/L','pH 7,44 · PaCO₂ 30 mmHg · HCO₃⁻ 20 mEq/L','pH 7,52 · PaCO₂ 25 mmHg · HCO₃⁻ 20 mEq/L','pH 7,36 · PaCO₂ 32 mmHg · HCO₃⁻ 17 mEq/L'], a:1,
+     e:'La progesterona estimula el centro respiratorio: alcalosis respiratoria compensada (PaCO₂ 28–32 mmHg, HCO₃⁻ 18–21 mEq/L, pH 7,40–7,45). Una PaCO₂ «normal» de 40 mmHg en una gestante indica hipoventilación relativa y fatiga respiratoria inminente.' },
+   { s:'fis', q:'En una gestante sana con parto vaginal, ¿en qué momento alcanza el gasto cardiaco su valor MÁXIMO?',
+     o:['Al final del segundo trimestre del embarazo','Durante la fase latente del trabajo de parto','Inmediatamente después del alumbramiento','Al inicio de la segunda semana del puerperio'], a:2,
+     e:'Tras el alumbramiento ocurre la autotransfusión uteroplacentaria (500–750 mL) y se libera la compresión aortocava: el gasto cardiaco puede subir hasta 75–80 % sobre el valor previo al parto. Es el momento de mayor riesgo de descompensación en cardiopatías como la estenosis mitral.' },
+   { s:'fis', q:'La gestante a término requiere MENOR dosis de anestésico local para alcanzar el mismo nivel de bloqueo neuroaxial. ¿Cuál es la explicación más aceptada?',
+     o:['Mayor unión del anestésico local a proteínas plasmáticas','Menor volumen de LCR lumbar y mayor sensibilidad neural','Menor pKa del anestésico local inducido por la progesterona','Mayor volumen de LCR lumbar que favorece la dispersión'], a:1,
+     e:'La ingurgitación de los plexos venosos epidurales (por compresión de la cava) reduce el volumen de LCR lumbar y la progesterona aumenta la sensibilidad de las fibras nerviosas. La unión a proteínas DISMINUYE en el embarazo y el pKa es una constante del fármaco.' },
+
+   { s:'card', q:'Gestante de 30 semanas con estenosis mitral grave (área valvular 0,9 cm²) en trabajo de parto. Presenta disnea, FC 132 lpm en ritmo sinusal y estertores bibasales. ¿Cuál es la intervención hemodinámica PRIORITARIA?',
+     o:['Control de la FC con betabloqueador cardioselectivo IV','Bolo de 1000 mL de cristaloide para optimizar la precarga','Infusión de dobutamina para mejorar la contractilidad','Atropina IV para aumentar el gasto cardiaco anterógrado'], a:0,
+     e:'En estenosis mitral el llenado del VI depende del tiempo diastólico: la taquicardia eleva la presión auricular izquierda y precipita edema pulmonar. Prioridad: control de la FC (esmolol/metoprolol), evitar sobrecarga de volumen y analgesia neuroaxial temprana para atenuar la respuesta simpática.' },
+   { s:'card', q:'Gestante de 37 semanas con estenosis aórtica grave sintomática (gradiente medio 50 mmHg, FEVI conservada), programada para cesárea con monitoría invasiva. ¿Cuál técnica anestésica es la MÁS apropiada?',
+     o:['Raquídea de dosis única con bupivacaína hiperbárica 12 mg','Epidural o CSE de dosis baja, titulada, con vasopresor','Raquídea convencional precedida de 2 L de cristaloide','Epidural con bolo único de 20 mL de lidocaína al 2 %'], a:1,
+     e:'El gasto cardiaco es fijo: una caída brusca de la RVS reduce la presión de perfusión coronaria y puede causar isquemia y paro. Se prefiere un bloqueo de instauración gradual (epidural o CSE de dosis baja titulada) con línea arterial y fenilefrina para mantener la RVS.' },
+   { s:'card', q:'Puérpera de 3 semanas, sin cardiopatía previa, consulta por disnea y ortopnea. El ecocardiograma muestra FEVI de 32 % sin otra causa identificable. ¿Qué criterio define el diagnóstico de miocardiopatía periparto (ESC)?',
+     o:['FEVI <45 % al final del embarazo o en los meses posparto','FEVI <35 % que aparece en el primer trimestre del embarazo','FEVI <50 % con antecedente conocido de miocardiopatía','FEVI <40 % solo si aparece en las 24 h siguientes al parto'], a:0,
+     e:'Miocardiopatía periparto: disfunción sistólica (FEVI <45 %) que aparece hacia el final del embarazo o en los meses siguientes al parto (sobre todo el primer mes), sin otra causa. Manejo de falla cardiaca; puede considerarse bromocriptina con anticoagulación (ESC 2025).' },
+   { s:'card', q:'Según la clasificación mWHO 2.0 (ESC 2025), ¿cuál de estas condiciones corresponde a clase IV, en la que el embarazo tiene riesgo muy alto y se desaconseja?',
+     o:['Hipertensión arterial pulmonar idiopática','Comunicación interauricular pequeña ya corregida','Tetralogía de Fallot reparada sin lesión residual','Síndrome de Marfan con raíz aórtica de 38 mm'], a:0,
+     e:'La hipertensión arterial pulmonar es mWHO IV (mortalidad materna muy alta). La CIA corregida es clase I, la tetralogía reparada sin lesiones clase II y el Marfan sin dilatación aórtica significativa clase II–III. Las clases ≥II–III deben manejarse con un Pregnancy Heart Team.' },
+
+   { s:'rojo', q:'Según las recomendaciones OMS/FIGO/ICM 2025 sobre hemorragia posparto (HPP), ¿qué criterio permite diagnosticar HPP y activar de inmediato el paquete MOTIVE?',
+     o:['Pérdida medida ≥300 mL con algún signo hemodinámico anormal','Pérdida estimada visualmente ≥1000 mL en el parto vaginal','Descenso de la hemoglobina ≥2 g/dL respecto a la de ingreso','Índice de choque ≥1,4 sin importar el volumen de pérdida medido'], a:0,
+     e:'OMS/FIGO/ICM 2025: HPP = pérdida medida objetivamente (bolsa calibrada) ≥300 mL con cualquier signo hemodinámico anormal (FC >100, PAS <100, PAD <60 o índice de choque >1), o ≥500 mL aunque no haya signos. Ante el diagnóstico: Masaje, Oxitócicos, Tranexámico, IV líquidos, Valoración del tracto genital y Escalamiento.' },
+   { s:'rojo', q:'Puérpera con hemorragia masiva por atonía; ha recibido 4 U de glóbulos rojos y continúa sangrando. El fibrinógeno de Clauss es 1,6 g/L. ¿Cuál es la conducta MÁS apropiada respecto a la coagulación?',
+     o:['Esperar a que el fibrinógeno baje de 1,0 g/L para reponer','Administrar fibrinógeno (concentrado o crioprecipitado)','Usar plasma fresco congelado como fuente única de fibrinógeno','Administrar factor VIIa recombinante como primera línea'], a:1,
+     e:'En HPP, un fibrinógeno <2 g/L con sangrado activo predice progresión a hemorragia grave y debe corregirse con concentrado de fibrinógeno o crioprecipitado (meta >2 g/L; FIBTEM A5 >12 mm si hay viscoelastometría). El plasma aporta poco fibrinógeno por volumen y el rFVIIa no es primera línea.' },
+   { s:'rojo', q:'Respecto al uso de ácido tranexámico en la hemorragia posparto (ensayo WOMAN y OMS), ¿cuál es la indicación CORRECTA?',
+     o:['1 g IV en 10 min al diagnóstico, dentro de las 3 h','1 g IV solo si el sangrado persiste más de 6 h después','4 g IV en bolo único ante cualquier pérdida mayor de 1 L','10 mg/kg IV únicamente después de una histerectomía'], a:0,
+     e:'Tranexámico 1 g IV en 10 min tan pronto se diagnostica la HPP y dentro de las 3 h del parto (el beneficio cae con cada 15 min de retraso y no hay beneficio después de 3 h). Segunda dosis de 1 g si el sangrado continúa a los 30 min o reaparece en las primeras 24 h.' },
+   { s:'rojo', q:'En el protocolo colombiano «Código Rojo» para choque hemorrágico obstétrico, ¿qué acciones corresponden a la fase de 1 a 20 minutos?',
+     o:['Activar el código y asignar los roles del equipo de respuesta','Reanimar (O₂, dos accesos, bolos) y diagnosticar la causa','Manejo avanzado con cirugía, embolización y traslado a UCI','Estabilizar y dar tratamiento dirigido según la causa'], a:1,
+     e:'Código Rojo: minuto 0 = activación y asignación de roles; 1–20 min = reanimación (O₂, dos accesos 14–16 G, cristaloide tibio en bolos, muestras, sonda vesical, calor) y diagnóstico de la causa (4 T); 20–60 min = estabilización y tratamiento dirigido; >60 min = manejo avanzado.' },
+
+   { s:'neu', q:'Cesárea electiva bajo raquídea (bupivacaína hiperbárica 10 mg + fentanilo 20 µg + morfina 100 µg). Según el consenso internacional sobre vasopresores en cesárea, ¿cuál es la estrategia RECOMENDADA para prevenir la hipotensión?',
+     o:['Precarga de 20 mL/kg de cristaloide 30 min antes del bloqueo','Infusión profiláctica de fenilefrina más cocarga','Efedrina en bolos solo cuando la PAS caiga de 80 mmHg','Trendelenburg de 20° sin uso de fármacos vasopresores'], a:1,
+     e:'Consenso internacional (Kinsella 2018): infusión profiláctica de fenilefrina (iniciar ~25–50 µg/min) más cocarga de cristaloide, con meta de PAS ≥90 % de la basal y evitando <80 %. La precarga es poco eficaz y la efedrina se asocia a más acidosis fetal. La noradrenalina es una alternativa.' },
+   { s:'neu', q:'En una cesárea ELECTIVA sin factores de riesgo de hemorragia, ¿cuál es el régimen de oxitocina recomendado por el consenso internacional de uterotónicos (2019)?',
+     o:['Bolo rápido de 10 UI seguido de 40 UI en 500 mL','Bolo de 5 UI en 1 min sin infusión de mantenimiento','Bolo de 1 UI seguido de infusión de 2,5–7,5 UI/h','Infusión de 40 UI/h sin bolo inicial en ningún caso'], a:2,
+     e:'Heesen 2019: cesárea electiva = 1 UI en bolo (no rápido) + infusión 2,5–7,5 UI/h; cesárea intraparto = 3 UI + infusión 7,5–15 UI/h. Los bolos grandes y rápidos causan hipotensión, taquicardia e isquemia miocárdica sin mejor tono uterino.' },
+   { s:'neu', q:'Para el mantenimiento de la analgesia epidural del trabajo de parto, ¿qué modalidad ha demostrado MENOR bloqueo motor y menor consumo de anestésico local?',
+     o:['Bolos epidurales intermitentes programados con PCEA','Infusión epidural continua de bupivacaína al 0,25 %','Bolos manuales horarios de lidocaína al 2 % sin PCEA','Infusión continua de ropivacaína al 0,5 % sin opioide'], a:0,
+     e:'Los bolos intermitentes programados (PIEB) con analgesia controlada por la paciente (PCEA) logran mejor dispersión, menor consumo de anestésico, menos bloqueo motor y más satisfacción que la infusión continua. Se usan soluciones diluidas (bupivacaína 0,0625–0,1 % + fentanilo).' },
+   { s:'neu', q:'Cesárea categoría 1 bajo anestesia general. Falla la intubación tras 2 intentos con videolaringoscopio; con un supraglótico de 2.ª generación se oxigena bien. La madre está estable y persiste la bradicardia fetal grave. Según OAA/DAS, ¿cuál es la conducta?',
+     o:['Despertar a la paciente y convertir a anestesia raquídea','Realizar tercer y cuarto intento con laringoscopia directa','Practicar cricotiroidotomía inmediata antes de la incisión','Proceder con la cesárea bajo AG a través del supraglótico'], a:3,
+     e:'OAA/DAS: tras intubación fallida con oxigenación adecuada por supraglótico, la decisión de despertar o continuar depende del estado materno y fetal. Con compromiso fetal grave y madre estable y oxigenada, se recomienda proceder con la cirugía a través del supraglótico de 2.ª generación. FONA solo si no se puede oxigenar (CICO).' },
+
+   { s:'the', q:'Gestante de 35 semanas con preeclampsia; PA 168/112 mmHg confirmada a los 15 minutos. ¿Cuál es el manejo INICIAL apropiado?',
+     o:['Labetalol IV 20 mg, con dosis crecientes cada 10 min','Furosemida IV 40 mg para reducir la precarga y la PA','Nitroprusiato como antihipertensivo de primera línea','Esperar 4 horas y repetir la medición antes de tratar'], a:0,
+     e:'La hipertensión grave (≥160/110) sostenida 15 min es una emergencia: tratar en 30–60 min con labetalol IV (20 → 40 → 80 mg), nifedipino oral de liberación inmediata o hidralazina IV, más sulfato de magnesio. Los diuréticos empeoran la hipovolemia y el nitroprusiato se reserva para casos refractarios.' },
+   { s:'the', q:'Puérpera con sulfato de magnesio (4 g de impregnación + 1 g/h) y oliguria. Presenta FR 8 rpm y ausencia de reflejo patelar. Además de suspender la infusión y dar soporte ventilatorio, ¿cuál es la medida inmediata?',
+     o:['Naloxona 0,4 mg IV repetida cada 2 minutos','Gluconato de calcio 1 g IV en 3 a 10 minutos','Neostigmina 2,5 mg IV con glicopirrolato 0,5 mg','Sugammadex 4 mg/kg IV para revertir la debilidad'], a:1,
+     e:'La hipermagnesemia (favorecida por la oliguria, eliminación renal) produce arreflexia, luego depresión respiratoria y paro. El antagonista es el calcio: gluconato de calcio 1 g IV lento (10 mL al 10 %). Naloxona, neostigmina y sugammadex no antagonizan el magnesio.' },
+   { s:'the', q:'Gestante de 38 semanas con preeclampsia con criterios de severidad, sin HELLP. Plaquetas 82.000/µL estables, sin historia de sangrado ni anticoagulantes. Solicita analgesia del parto. Según el consenso SOAP 2021, ¿cuál es la conducta?',
+     o:['Contraindicar el neuroeje por tener menos de 100.000/µL','Transfundir plaquetas hasta >100.000/µL y luego puncionar','Proceder con la analgesia neuroaxial si está indicada','Solicitar tromboelastografía obligatoria antes de puncionar'], a:2,
+     e:'SOAP 2021: con plaquetas ≥70.000/µL por trombocitopenia gestacional, PTI o trastorno hipertensivo, sin otros factores de riesgo, el riesgo de hematoma es muy bajo y es razonable proceder. En HELLP se sugiere verificar el recuento en las 6 h previas. La analgesia temprana evita una anestesia general de urgencia.' },
+   { s:'the', q:'Cesárea urgente bajo anestesia general en una paciente con preeclampsia grave y contraindicación para el neuroeje. ¿Cuál es el objetivo ESPECÍFICO más importante durante la laringoscopia e intubación?',
+     o:['Evitar opioides para no deprimir al recién nacido','Reducir el rocuronio a 0,3 mg/kg por el magnesio','Atenuar la respuesta hipertensiva para evitar ACV','Usar un tubo de mayor calibre por el edema de la vía aérea'], a:2,
+     e:'La respuesta presora a la laringoscopia puede causar hemorragia intracerebral (principal causa de muerte en preeclampsia). Se atenúa con remifentanilo, labetalol, magnesio o esmolol. La dosis de rocuronio para secuencia rápida NO se reduce, y por el edema se usa un tubo MÁS pequeño (6,0–6,5).' },
+
+   { s:'sep', q:'Puérpera de 3 días poscesárea: T 39,2 °C, FC 128 lpm, PAS 84 mmHg, FR 28 rpm, confusa, lactato 4,6 mmol/L. ¿Cuál es el manejo CORRECTO en la primera hora?',
+     o:['Esperar cultivos e imágenes antes de iniciar antibiótico','Dopamina como primer vasopresor antes de dar volumen','Hidrocortisona 200 mg/día como primera medida aislada','Hemocultivos, antibiótico IV y bolos de cristaloide'], a:3,
+     e:'Choque séptico materno: en la primera hora tomar hemocultivos (sin retrasar el antibiótico), antibiótico IV de amplio espectro, lactato y bolos de cristaloide balanceado reevaluando la respuesta; noradrenalina si persiste la hipotensión. Buscar y controlar el foco (endometritis, herida, retención de restos).' },
+   { s:'sep', q:'¿Cuáles son los criterios del qSOFA modificado obstétrico (omqSOFA) para identificar a la gestante con probable sepsis y mayor riesgo de mortalidad?',
+     o:['PAS ≤100 mmHg, FR ≥22 rpm y alteración del estado mental','FC ≥100 lpm, T ≥38 °C y leucocitos mayores de 12.000/µL','PAM ≤65 mmHg, lactato ≥2 mmol/L y diuresis <0,5 mL/kg/h','PAS ≤90 mmHg, FR ≥25 rpm y alteración del estado mental'], a:3,
+     e:'omqSOFA (SOMANZ): PAS ≤90 mmHg, FR ≥25 rpm y alteración del estado mental (≥2 criterios = alto riesgo). Los umbrales se ajustan porque la gestante normalmente tiene PA más baja y FR más alta. PAS ≤100 y FR ≥22 son del qSOFA de la población general.' },
+   { s:'sep', q:'Gestante con choque séptico que, tras 2 L de cristaloide, persiste con PAM de 58 mmHg. ¿Cuál es el vasopresor de primera línea?',
+     o:['Dopamina por su menor riesgo de taquiarritmias','Fenilefrina en infusión como primera y única opción','Vasopresina en monoterapia como agente inicial','Noradrenalina, aun por vía periférica al inicio'], a:3,
+     e:'Surviving Sepsis 2021 (aplicable en el embarazo): noradrenalina es el vasopresor de primera línea, meta PAM ≥65 mmHg; puede iniciarse por una vena periférica de buen calibre mientras se obtiene un acceso central. Vasopresina se agrega como segundo agente; la dopamina tiene MÁS arritmias.' },
+   { s:'sep', q:'Gestante en trabajo de parto con corioamnionitis (T 38,6 °C) que recibe ampicilina + gentamicina desde hace 1 hora. Está hemodinámicamente estable y sin coagulopatía. Solicita analgesia. ¿Cuál es la conducta?',
+     o:['Analgesia neuroaxial: no está contraindicada','Contraindicar el neuroeje hasta 24 h de antibiótico','Ofrecer solo meperidina IM por el riesgo de meningitis','Permitir el neuroeje solo con hemocultivos negativos'], a:0,
+     e:'La fiebre o la corioamnionitis tratadas con antibiótico, sin inestabilidad hemodinámica ni coagulopatía, NO contraindican la analgesia neuroaxial. El riesgo de infección neuroaxial es muy bajo. Sí la contraindican el choque séptico, la coagulopatía o la infección en el sitio de punción.' }
+  ],
+  // ── PARTE B · Verdadero / Falso múltiple (tipo MTF) ──
+  mtf: [
+   { s:'fis', tronco:'Respecto a los cambios fisiológicos de la gestante a término:', items:[
+     ['El volumen plasmático aumenta proporcionalmente más que la masa eritrocitaria.', true, 'Por eso hay anemia dilucional fisiológica.'],
+     ['La capacidad vital disminuye de forma significativa.', false, 'La capacidad vital se mantiene; la que disminuye es la CRF.'],
+     ['El fibrinógeno plasmático suele superar los 4 g/L.', true, 'El embarazo es protrombótico: fibrinógeno 4–6 g/L.'],
+     ['Sin trabajo de parto, el vaciamiento gástrico está enlentecido desde el primer trimestre.', false, 'El vaciamiento es normal en el embarazo; se enlentece en el trabajo de parto y con opioides.'],
+     ['La resistencia vascular sistémica disminuye.', true, 'Cae ~20–30 % por la progesterona, prostaciclina y la circulación uteroplacentaria.'] ]},
+   { s:'card', tronco:'En la gestante con cardiopatía:', items:[
+     ['El parto vaginal con analgesia neuroaxial es la vía preferida en la mayoría de las cardiopatías.', true, 'La cesárea se reserva para indicación obstétrica o casos cardiológicos específicos.'],
+     ['La metilergonovina es de elección para la atonía en la estenosis mitral grave.', false, 'Produce vasoconstricción e hipertensión pulmonar: contraindicada.'],
+     ['En hipertensión pulmonar, la hipoxemia, la hipercapnia y la acidosis elevan la RVP y deben evitarse.', true, 'Precipitan falla aguda del VD.'],
+     ['La oxitocina en bolo rápido puede producir hipotensión y taquicardia.', true, 'Se administra en infusión lenta en cardiopatas.'],
+     ['La warfarina es el anticoagulante de elección para una cesárea programada en válvula mecánica.', false, 'Se suspende y se cambia a heparina antes del parto.'] ]},
+   { s:'rojo', tronco:'Sobre la hemorragia obstétrica:', items:[
+     ['La atonía uterina es la causa más frecuente de hemorragia posparto.', true, 'Explica alrededor del 70–80 % de los casos (Tono de las 4 T).'],
+     ['La estimación visual tiende a sobreestimar la pérdida real.', false, 'La SUBESTIMA; por eso se recomienda la medición objetiva con bolsa calibrada.'],
+     ['Si el sangrado continúa 30 min después de la primera dosis de tranexámico, se puede dar una segunda dosis de 1 g.', true, 'Recomendación OMS basada en WOMAN.'],
+     ['En la puérpera, un índice de choque normal es mayor de 1,2.', false, 'Normal 0,7–0,9; >1 sugiere compromiso hemodinámico.'],
+     ['En la hemorragia masiva se deben evitar la hipotermia, la acidosis y la hipocalcemia.', true, 'Son determinantes de la coagulopatía (tríada/rombo letal).'] ]},
+   { s:'neu', tronco:'Analgesia y anestesia neuroaxial obstétrica:', items:[
+     ['La cefalea pospunción típica es postural: empeora al sentarse o ponerse de pie.', true, 'Y mejora en decúbito.'],
+     ['El reposo absoluto en cama previene la cefalea pospunción dural.', false, 'No la previene; solo alivia el síntoma.'],
+     ['La morfina intratecal (50–150 µg) da analgesia poscesárea prolongada y exige vigilancia respiratoria.', true, 'Riesgo de depresión respiratoria tardía (hasta 12–24 h).'],
+     ['La dosis de prueba con lidocaína-epinefrina detecta con certeza todo catéter intravascular.', false, 'Tiene falsos negativos; toda dosis debe fraccionarse.'],
+     ['Con enoxaparina profiláctica se recomienda esperar al menos 12 h antes de la punción neuroaxial.', true, 'ASRA/SOAP: 12 h profiláctica; 24 h a dosis terapéutica.'] ]},
+   { s:'the', tronco:'Trastornos hipertensivos del embarazo:', items:[
+     ['El sulfato de magnesio es el fármaco de elección para prevenir y tratar la eclampsia.', true, 'Superior a fenitoína y diazepam.'],
+     ['El sulfato de magnesio potencia y prolonga los relajantes neuromusculares no despolarizantes.', true, 'Monitorizar con TOF y revertir adecuadamente.'],
+     ['La preeclampsia, aun sin trombocitopenia, contraindica la anestesia neuroaxial.', false, 'El neuroeje es la técnica preferida si no hay coagulopatía.'],
+     ['El síndrome HELLP puede presentarse por primera vez en el posparto.', true, 'Hasta un tercio de los casos.'],
+     ['En preeclampsia el intravascular suele estar expandido; por eso se recomienda carga liberal de líquidos.', false, 'Suele estar contraído, pero hay riesgo de edema pulmonar: líquidos restrictivos y guiados.'] ]},
+   { s:'sep', tronco:'Sepsis y choque séptico materno:', items:[
+     ['La sepsis es una causa importante de muerte materna prevenible.', true, 'Tercera causa directa en muchos países.'],
+     ['El lactato sérico no se modifica durante el trabajo de parto.', false, 'El trabajo de parto lo eleva; interpretar con cautela.'],
+     ['El estreptococo del grupo A puede producir sepsis puerperal fulminante.', true, 'Requiere antibiótico precoz (incluir clindamicina) y control del foco.'],
+     ['En choque séptico con coagulopatía, el neuroeje es la técnica de elección para la cesárea.', false, 'Está contraindicado: inestabilidad y riesgo de hematoma.'],
+     ['La fiebre posparto con taquicardia persistente exige búsqueda activa del foco y antibiótico precoz.', true, 'Cada hora de retraso aumenta la mortalidad.'] ]}
+  ],
+  // ── PARTE C · Emparejamiento extendido (EMQ) ──
+  emq: [
+   { tema:'Fármacos en anestesia obstétrica', instr:'Para cada situación elija el fármaco MÁS apropiado. Cada opción puede usarse una vez, más de una vez o ninguna.',
+     opciones:['Fenilefrina','Efedrina','Nitroglicerina','Sulfato de magnesio','Gluconato de calcio','Ácido tranexámico','Metilergonovina','Labetalol','Carbetocina','Naloxona'],
+     items:[
+      ['Retención placentaria que requiere relajación uterina breve e inmediata para la extracción manual.', 'Nitroglicerina', 'Nitroglicerina IV 50–100 µg: relajación uterina de inicio rápido y corta duración.'],
+      ['Prevención de convulsiones en una gestante con preeclampsia con criterios de severidad.', 'Sulfato de magnesio', 'Impregnación de 4–6 g y mantenimiento de 1–2 g/h.'],
+      ['Hipotensión tras raquídea para cesárea con FC de 112 lpm.', 'Fenilefrina', 'Con taquicardia, el agonista α puro es de elección; la efedrina aumentaría la FC.'],
+      ['Puérpera con infusión de magnesio, depresión respiratoria y arreflexia.', 'Gluconato de calcio', 'Antagonista fisiológico del magnesio.'],
+      ['HPP diagnosticada a los 40 min del parto: fármaco del paquete MOTIVE que reduce la muerte por sangrado si se da en las primeras 3 h.', 'Ácido tranexámico', 'WOMAN: 1 g IV en 10 min dentro de las 3 h.'] ]},
+   { tema:'Complicaciones agudas periparto', instr:'Para cada cuadro clínico elija el diagnóstico MÁS probable.',
+     opciones:['Embolia de líquido amniótico','Toxicidad sistémica por anestésico local','Bloqueo neuroaxial alto o total','Eclampsia','Hematoma epidural','Cefalea pospunción dural','Síndrome de compresión aortocava','Hipermagnesemia','Atonía uterina','Absceso epidural'],
+     items:[
+      ['Durante el expulsivo: disnea súbita, hipoxemia y colapso cardiovascular, seguidos de coagulopatía de consumo con sangrado difuso.', 'Embolia de líquido amniótico', 'Tríada clásica: hipoxemia, hipotensión/paro y CID.'],
+      ['Tras un bolo epidural de 15 mL de bupivacaína al 0,5 %: sabor metálico, tinnitus, convulsión y luego arritmia ventricular.', 'Toxicidad sistémica por anestésico local', 'Inyección intravascular: tratar con emulsión lipídica al 20 %.'],
+      ['Minutos después de la dosis epidural para cesárea: hipotensión, bradicardia, debilidad de las manos, dificultad para hablar y apnea.', 'Bloqueo neuroaxial alto o total', 'Probable migración subaracnoidea del catéter.'],
+      ['Retiro de catéter epidural con enoxaparina terapéutica reiniciada a las 6 h; a las 18 h: dolor lumbar y paraparesia progresiva.', 'Hematoma epidural', 'Urgencia: RM inmediata y descompresión en <8 h.'],
+      ['Puérpera de 3 días con cefalea frontooccipital que empeora al sentarse y desaparece acostada, sin fiebre ni déficit focal.', 'Cefalea pospunción dural', 'Cuadro postural típico; si persiste, parche hemático.'] ]}
+  ],
+  // ── PARTE D · Secuencias ──
+  seq: [
+   { titulo:'Intubación fallida en anestesia obstétrica (algoritmo OAA/DAS)', instr:'Ordene los pasos de PRIMERO a ÚLTIMO.', pasos:[
+     'Preoxigenar e inducir en secuencia rápida con presión cricoidea',
+     'Laringoscopia (máximo 2 intentos; un 3.º solo por el más experto)',
+     'Declarar intubación fallida y pedir ayuda',
+     'Insertar supraglótico de 2.ª generación o ventilar con máscara facial',
+     'Si no se puede oxigenar: declarar CICO y hacer cricotiroidotomía con bisturí' ],
+     e:'OAA/DAS 2015: inducción → máximo 2 intentos de intubación → declarar falla → oxigenar por supraglótico o máscara (retirando la presión cricoidea si es necesario) → si no se puede intubar ni oxigenar, FONA con bisturí.' },
+   { titulo:'Fases del Código Rojo', instr:'Ordene cronológicamente las fases del protocolo.', pasos:[
+     'Reconocer pérdida >1000 mL o signos de choque, activar el código y asignar roles',
+     'Oxígeno, dos accesos 14–16 G, bolos de cristaloide tibio, muestras y diagnóstico de la causa',
+     'Estabilización y tratamiento dirigido a la causa con hemoderivados según necesidad',
+     'Manejo avanzado: cirugía o embolización y traslado a cuidado intensivo' ],
+     e:'Minuto 0 → 1–20 min → 20–60 min → más de 60 min.' }
+  ],
+  // ── PARTE D · Cálculos (respuesta numérica única) ──
+  calc: [
+   { q:'Usted dispone de ampollas de sulfato de magnesio al 20 % (2 g en 10 mL). ¿Cuántos mL debe administrar para la dosis de impregnación de 4 g?', unidad:'mL', ans:20, tol:0, e:'20 % = 20 g/100 mL = 0,2 g/mL → 4 g ÷ 0,2 g/mL = 20 mL (diluidos y en 15–20 min).' },
+   { q:'Puérpera con FC 126 lpm y PAS 90 mmHg. Calcule el índice de choque (dos decimales).', unidad:'', ans:1.4, tol:0.02, e:'IC = FC/PAS = 126/90 = 1,40. Un IC ≥1,4 se asocia a necesidad de transfusión masiva e intervención urgente.' },
+   { q:'Prepara fenilefrina 10 mg en 100 mL de SSN. ¿A cuántos mL/h debe programar la bomba para infundir 50 µg/min?', unidad:'mL/h', ans:30, tol:0, e:'10 mg/100 mL = 100 µg/mL. 50 µg/min × 60 = 3000 µg/h → 3000 ÷ 100 = 30 mL/h.' }
+  ]
+ },
+
+ tra: {
+  id: 'tra',
+  titulo: 'Anestesia en trauma',
+  corto: 'Trauma',
+  icono: '🚑',
+  color: '#0050FF',
+  subtemas: {
+   emb: 'Trauma en el embarazo',
+   cor: 'Trauma cardiaco',
+   tce: 'Trauma craneoencefálico',
+   que: 'Paciente quemado',
+   ger: 'Trauma en el adulto mayor',
+   reg: 'Anestesia regional y trauma'
+  },
+  sba: [
+   { s:'emb', q:'Gestante de 30 semanas, accidente de tránsito, inmovilizada en tabla espinal en decúbito supino. PA 86/50 mmHg, FC 122 lpm. Además del xABCDE, ¿cuál es la medida INMEDIATA específica del embarazo?',
+     o:['Trendelenburg de 30° sobre la tabla para la precarga','Desplazar el útero a la izquierda o inclinar la tabla','Cesárea inmediata para mejorar la hemodinamia materna','Restringir cristaloides por el riesgo de edema pulmonar'], a:1,
+     e:'Desde la semana 20 el útero comprime la cava en supino y reduce el retorno venoso hasta 30 %. Desplazamiento uterino manual a la izquierda (o inclinar la tabla 15–30° manteniendo la restricción espinal). Se reanima a la madre: el mejor tratamiento fetal es la reanimación materna.' },
+   { s:'emb', q:'Gestante de 34 semanas en paro cardiaco traumático; el fondo uterino está 4 cm por encima del ombligo y no hay retorno de la circulación pese a RCP de calidad con desplazamiento uterino. ¿Cuándo debe iniciarse la histerotomía de reanimación?',
+     o:['Solo después de 20 minutos de RCP sin retorno de la circulación','A los 4 min del paro, con extracción fetal hacia el minuto 5','Una vez confirmada la viabilidad fetal por ecografía obstétrica','Únicamente en el quirófano y con circulación espontánea'], a:1,
+     e:'AHA/ATLS: si el útero llega al ombligo o lo supera y no hay RCE, iniciar la histerotomía de reanimación a los 4 min para extraer el feto hacia el minuto 5, en el mismo sitio del paro. El objetivo principal es mejorar la reanimación MATERNA; no se retrasa por ecografía.' },
+   { s:'emb', q:'Gestante de 26 semanas, Rh(D) negativa, con trauma abdominal cerrado leve; está estable y sin sangrado vaginal. ¿Cuál es la conducta respecto a la aloinmunización?',
+     o:['Anti-D solo si aparece sangrado vaginal o dolor uterino evidente','Anti-D en las primeras 72 h y cuantificar hemorragia fetomaterna','Anti-D solo si se confirma un feto Rh positivo al nacer','No se requiere anti-D en trauma cerrado antes de la semana 34'], a:1,
+     e:'Toda gestante Rh negativa con trauma abdominal debe recibir inmunoglobulina anti-D en las primeras 72 h, aun con trauma leve, porque la hemorragia feto-materna puede ser oculta. La prueba de Kleihauer-Betke cuantifica el volumen y orienta si se requieren dosis adicionales.' },
+   { s:'emb', q:'Gestante de 28 semanas con trauma cerrado; madre estable, sin dolor ni sangrado. ¿Cuál es la conducta recomendada para la vigilancia fetal?',
+     o:['Ecografía única; si es normal, dar de alta sin monitoreo','Monitoreo fetal solo si aparece dolor abdominal o sangrado','Cardiotocografía continua durante al menos 4 a 6 horas','No monitorizar al feto antes de la semana 32 de gestación'], a:2,
+     e:'En gestaciones viables (≥20–24 semanas) se recomienda monitoreo cardiotocográfico continuo por al menos 4–6 h, porque el desprendimiento de placenta puede ser oculto y tardío. La ecografía tiene baja sensibilidad para el desprendimiento.' },
+
+   { s:'cor', q:'Herida por arma cortopunzante precordial. PA 78/60 mmHg, ingurgitación yugular y pulso paradójico; el FAST muestra derrame pericárdico. Se lleva a esternotomía. ¿Cuál es la estrategia de inducción MÁS segura?',
+     o:['Propofol 2 mg/kg y ventilación con PEEP elevada','Inducir antes de preparar el campo para ganar tiempo','Relajante sin hipnótico para evitar la hipotensión','Campo preparado antes de inducir y ketamina a dosis baja'], a:3,
+     e:'En taponamiento la inducción y la ventilación con presión positiva pueden causar colapso: preparar y vestir el campo con el cirujano listo antes de inducir, usar ketamina (o etomidato) a dosis bajas, mantener precarga, FC y contractilidad, y evitar PEEP alta hasta abrir el pericardio. Administrar relajante sin hipnótico causa recuerdo y no es aceptable.' },
+   { s:'cor', q:'Según las guías EAST, ¿en cuál de los siguientes escenarios está MÁS indicada la toracotomía de reanimación en urgencias?',
+     o:['Trauma cerrado en asistolia con más de 15 min de RCP','Herida penetrante de tórax, paro presenciado y signos de vida','TCE grave aislado con actividad eléctrica sin pulso al ingreso','Trauma cerrado sin signos de vida a la llegada al hospital'], a:1,
+     e:'EAST: la toracotomía de reanimación se recomienda fuertemente en trauma torácico penetrante sin pulso con signos de vida presentes (mayor supervivencia, causa tratable como taponamiento). En trauma cerrado sin signos de vida los resultados son muy pobres.' },
+   { s:'cor', q:'Paciente estable tras impacto torácico contra el volante. Según EAST, ¿cuál es el tamizaje recomendado para la lesión cardiaca contusa?',
+     o:['ECG y troponina; si ambos son normales se descarta la lesión','Ecocardiograma transesofágico obligatorio en todos los casos','CK-MB seriada cada 6 h durante 24 h como única prueba','Radiografía de tórax; si es normal se descarta la lesión'], a:0,
+     e:'EAST: ECG de 12 derivaciones en todos; si es anormal, hospitalizar con monitoría. ECG y troponina I normales descartan una lesión cardiaca contusa significativa. El ecocardiograma se reserva para inestabilidad o arritmias. La CK-MB no es útil.' },
+   { s:'cor', q:'En un paciente con taponamiento cardiaco traumático, antes de la apertura del pericardio, ¿cuál estrategia ventilatoria es la MÁS adecuada?',
+     o:['PEEP de 10–12 cmH₂O para reclutar y mejorar la oxigenación','Volumen corriente de 10–12 mL/kg para reducir la PaCO₂','Ventilación espontánea o presiones bajas con PEEP mínima','Relación I:E inversa 2:1 para aumentar la presión media'], a:2,
+     e:'La presión intratorácica positiva reduce aún más el retorno venoso en un corazón con llenado restringido. Lo ideal es conservar la ventilación espontánea hasta la apertura del pericardio o, si se ventila, usar volúmenes bajos, FR alta y PEEP mínima.' },
+
+   { s:'tce', q:'Paciente de 35 años con TCE grave (Glasgow 7). Según la Brain Trauma Foundation (4.ª edición), ¿cuál es la meta de presión arterial sistólica?',
+     o:['Mantener PAS ≥90 mmHg, igual que en todo politrauma','Mantener PAS ≥110 mmHg para este grupo de edad','Hipotensión permisiva con PAS de 70 a 80 mmHg','Mantener PAS ≥160 mmHg para asegurar la perfusión'], a:1,
+     e:'BTF: PAS ≥110 mmHg en pacientes de 15–49 y >70 años, y ≥100 mmHg entre 50 y 69 años. Un solo episodio de hipotensión duplica la mortalidad. La hipotensión permisiva está CONTRAINDICADA en el TCE.' },
+   { s:'tce', q:'En el TCE grave, ¿cuál es el uso CORRECTO de la hiperventilación?',
+     o:['Profiláctica con PaCO₂ de 25–30 mmHg durante 24 horas','Rutinaria para mantener PaCO₂ <30 mmHg en la cirugía','Prolongada (más de 48 h) para controlar la presión intracraneana','Solo como puente breve ante signos de herniación inminente'], a:3,
+     e:'La hipocapnia produce vasoconstricción e isquemia cerebral. BTF desaconseja la hiperventilación profiláctica prolongada (PaCO₂ ≤25 mmHg) y en las primeras 24 h. Se usa solo como medida temporal ante herniación mientras se instaura el tratamiento definitivo; meta habitual: normocapnia (35–40 mmHg).' },
+   { s:'tce', q:'Según el ensayo CRASH-3, ¿cuál afirmación sobre el ácido tranexámico en el TCE es CORRECTA?',
+     o:['Reduce la muerte por TCE leve a moderado si se da en <3 h','Reduce la mortalidad en el TCE grave con pupilas arreactivas','Es eficaz aun cuando se inicia entre 8 y 12 h tras la lesión','Aumenta de forma clara el riesgo de eventos tromboembólicos'], a:0,
+     e:'CRASH-3: tranexámico (1 g en 10 min + 1 g en 8 h) dentro de las 3 h redujo la muerte relacionada con el TCE en lesiones leves a moderadas; no hubo beneficio en pupilas arreactivas bilaterales ni aumento de eventos trombóticos. El beneficio disminuye con el retraso.' },
+   { s:'tce', q:'Paciente con TCE grave y PA 85/50 mmHg requiere intubación de secuencia rápida. ¿Cuál afirmación es CORRECTA?',
+     o:['La ketamina está contraindicada porque siempre eleva la PIC','Propofol 2,5 mg/kg es de elección porque disminuye la PIC','La succinilcolina está contraindicada en todo TCE agudo','La ketamina es aceptable: no eleva la PIC si se ventila'], a:3,
+     e:'La ketamina preserva la PA (y por tanto la PPC) y no aumenta la PIC con ventilación controlada; es una opción adecuada en el TCE hipotenso. El propofol a dosis plenas causa hipotensión que reduce la PPC. La succinilcolina puede usarse en el TCE agudo.' },
+
+   { s:'que', q:'Paciente con quemaduras del 40 % de la superficie corporal, en el día 10, requiere secuencia rápida para desbridamiento. ¿Cuál relajante neuromuscular es el apropiado?',
+     o:['Succinilcolina 1,5 mg/kg; el riesgo termina a las 72 h','Succinilcolina a dosis reducida de 0,5 mg/kg es segura','Rocuronio a dosis altas, evitando la succinilcolina','Cisatracurio 0,1 mg/kg por su inicio muy rápido'], a:2,
+     e:'Tras 24–48 h de la quemadura proliferan receptores de acetilcolina extrasinápticos: la succinilcolina puede causar hiperpotasemia letal (riesgo que persiste hasta la cicatrización completa, a veces >1 año). Además hay resistencia a los no despolarizantes: se requieren dosis mayores de rocuronio (1,2 mg/kg).' },
+   { s:'que', q:'Paciente rescatado de un incendio en espacio cerrado: quemadura facial, vibrisas chamuscadas, esputo carbonáceo, voz ronca y estridor. ¿Cuál es la conducta con la vía aérea?',
+     o:['Intubación temprana por el más experto con tubo ≥7,5','Vigilar e intubar solo si la SpO₂ cae por debajo de 90 %','Dexametasona IV y adrenalina nebulizada sin intubar','Máscara laríngea como dispositivo definitivo de traslado'], a:0,
+     e:'La ronquera y el estridor indican edema supraglótico progresivo: la vía aérea puede volverse imposible en horas. Intubación temprana por el operador más experto, con tubo grande (≥7,5–8 mm) que permita broncoscopia. Esperar la desaturación es tardío.' },
+   { s:'que', q:'Víctima de incendio domiciliario: SpO₂ de pulso 99 %, confusión y carboxihemoglobina de 28 %. ¿Cuál afirmación es CORRECTA?',
+     o:['Una SpO₂ de 99 % descarta la intoxicación por monóxido','El tratamiento inicial es O₂ al 28 % por cánula nasal','La PaO₂ arterial disminuye en proporción a la COHb','La oximetría de pulso sobreestima la saturación real'], a:3,
+     e:'El oxímetro de dos longitudes de onda lee la COHb como oxihemoglobina, por lo que sobreestima la saturación. La PaO₂ suele ser normal. Tratamiento: O₂ al 100 % (reduce la vida media de la COHb de ~4–5 h a ~1 h); considerar cámara hiperbárica en casos seleccionados.' },
+   { s:'que', q:'Paciente de incendio en espacio cerrado con lactato de 12 mmol/L e inestabilidad hemodinámica pese a reanimación adecuada. Se sospecha intoxicación por cianuro. ¿Cuál es el tratamiento de elección?',
+     o:['Azul de metileno 1–2 mg/kg IV en 5 minutos','Hidroxocobalamina 5 g IV en 15 minutos','Flumazenil 0,2 mg IV repetido hasta 1 mg','Bicarbonato 1 mEq/kg IV como tratamiento único'], a:1,
+     e:'La hidroxocobalamina (70 mg/kg; 5 g en adultos) se une al cianuro formando cianocobalamina que se elimina por vía renal. Es de elección en víctimas de humo porque no produce metahemoglobinemia (los nitritos empeorarían el transporte de O₂ ya afectado por la COHb).' },
+
+   { s:'ger', q:'Paciente de 82 años que toma warfarina (INR 3,8), con fractura de cadera y un hematoma subdural pequeño tras una caída. ¿Cuál es la reversión urgente recomendada?',
+     o:['Complejo protrombínico de 4 factores + vitamina K IV','Plasma fresco 10 mL/kg como primera línea sin vitamina K','Vitamina K oral como única medida y esperar el INR','Ácido tranexámico como único agente de reversión'], a:0,
+     e:'Ante hemorragia grave o intracraneal con antagonistas de vitamina K: CCP de 4 factores (25–50 UI/kg según INR) + vitamina K 5–10 mg IV lenta (efecto sostenido). El CCP corrige el INR en minutos y con menos volumen que el plasma.' },
+   { s:'ger', q:'Paciente de 78 años en tratamiento con betabloqueador; caída de su altura. FC 78 lpm, PAS 108 mmHg (basal habitual 160 mmHg). ¿Cuál es la interpretación CORRECTA?',
+     o:['Hemodinamia normal: FC y PAS dentro de rangos del adulto','El betabloqueador acentúa la taquicardia compensatoria','Choque oculto posible: PAS <110 mmHg en el anciano','Solo debe buscarse hemorragia si la FC supera 120 lpm'], a:2,
+     e:'En el adulto mayor la PAS <110 mmHg puede representar choque (ATLS), sobre todo en hipertensos crónicos; los betabloqueadores bloquean la taquicardia compensatoria. Los signos vitales «normales» no excluyen hipoperfusión: medir lactato y déficit de base.' },
+   { s:'ger', q:'Según el ensayo REGAIN (2021), en pacientes de 50 años o más con cirugía por fractura de cadera, al comparar anestesia raquídea con general:',
+     o:['La raquídea redujo claramente la mortalidad a 60 días','La general redujo a la mitad el delirium posoperatorio','La raquídea mejoró la deambulación independiente a los 60 días','No hubo diferencia en deambulación a 60 días ni en delirium'], a:3,
+     e:'REGAIN (NEJM 2021, n=1600): la raquídea no fue superior a la general en supervivencia y deambulación independiente a 60 días, y la incidencia de delirium fue similar. La elección se individualiza; lo prioritario es la cirugía temprana y la analgesia multimodal con bloqueo regional.' },
+   { s:'ger', q:'Paciente de 74 años con 4 fracturas costales unilaterales, dolor 8/10 y capacidad vital disminuida. ¿Cuál es la MEJOR estrategia analgésica?',
+     o:['Opioides IV en bolos como única estrategia analgésica','Analgesia regional (epidural o fascial) multimodal','Vendaje torácico circunferencial para inmovilizar','Esperar la evolución radiológica antes de analgesiar'], a:1,
+     e:'En adultos mayores con ≥3 fracturas costales la mortalidad y la neumonía aumentan. La analgesia regional (epidural torácica, erector de la columna o serrato) dentro de un esquema multimodal mejora la función respiratoria y reduce el consumo de opioides. El vendaje favorece atelectasias.' },
+
+   { s:'reg', q:'Paciente con fractura de diáfisis tibial, con alto riesgo de síndrome compartimental. ¿Cuál práctica de anestesia regional es la MÁS aceptada?',
+     o:['Bloqueo denso de larga duración sin vigilancia adicional','Contraindicar toda técnica regional en la fractura tibial','Infusión epidural densa para controlar el dolor isquémico','Bloqueo de baja concentración y vigilancia estrecha'], a:3,
+     e:'No hay evidencia de que la analgesia regional bien conducida retrase el diagnóstico. Se recomiendan concentraciones bajas, evitar bloqueos densos, comunicación con el equipo quirúrgico y vigilancia (± presión compartimental). El dolor irruptivo pese a un bloqueo eficaz es una señal de alarma.' },
+   { s:'reg', q:'Paciente con fractura del cuello femoral en urgencias. ¿Cuál bloqueo ofrece analgesia de la cadera con MENOR compromiso motor del cuádriceps?',
+     o:['Bloqueo del nervio femoral con 30 mL de ropivacaína','Bloqueo de la fascia ilíaca suprainguinal con 40 mL','Bloqueo PENG de los nervios articulares de la cadera','Bloqueo del plexo lumbar por vía posterior (psoas)'], a:2,
+     e:'El bloqueo PENG se dirige a las ramas articulares de los nervios femoral, obturador y obturador accesorio en la cápsula anterior, con analgesia eficaz y relativa preservación motora del cuádriceps, lo que facilita la movilización temprana.' },
+   { s:'reg', q:'En el paciente traumatizado, ¿cuál de las siguientes condiciones CONTRAINDICA la anestesia neuroaxial?',
+     o:['Choque hemorrágico no compensado con coagulopatía','Fractura aislada de tobillo en un paciente estable','Fractura de cadera en anciano sin anticoagulantes','Antiagregación con ácido acetilsalicílico como monoterapia'], a:0,
+     e:'La simpatectomía del neuroeje en un paciente hipovolémico produce colapso cardiovascular, y la coagulopatía aumenta el riesgo de hematoma. El ASA en monoterapia no contraindica el neuroeje (ASRA).' },
+   { s:'reg', q:'Paciente de 60 kg: durante un bloqueo infraclavicular con bupivacaína presenta convulsión y luego taquicardia ventricular. Además del soporte vital, ¿cuál es la conducta ESPECÍFICA?',
+     o:['Adrenalina 1 mg cada 3 min con vasopresina de primera línea','Lidocaína IV 1,5 mg/kg como antiarrítmico de elección','Emulsión lipídica 20 %: 1,5 mL/kg en bolo e infusión','Propofol 2 mg/kg IV para tratar la cardiotoxicidad'], a:2,
+     e:'ASRA (LAST): emulsión lipídica al 20 % 1,5 mL/kg en 2–3 min (100 mL si >70 kg) seguida de 0,25 mL/kg/min. Reducir la adrenalina a ≤1 µg/kg, evitar vasopresina, betabloqueadores, calcioantagonistas y anestésicos locales. El propofol no sustituye al lípido.' }
+  ],
+  mtf: [
+   { s:'emb', tronco:'Trauma en la gestante:', items:[
+     ['El útero sale de la pelvis hacia la semana 12 y alcanza el ombligo hacia la semana 20.', true, 'Referencia útil para estimar la edad gestacional y la compresión aortocava.'],
+     ['Por la hipervolemia, la gestante puede perder hasta 30 % de su volumen antes de mostrar hipotensión.', true, 'El feto puede estar en choque antes que la madre.'],
+     ['Los vasopresores son la primera medida en el choque hemorrágico de la gestante.', false, 'Primero control de la hemorragia y reposición; los vasopresores reducen el flujo uterino.'],
+     ['Una TC indicada para la madre no debe omitirse por temor a la radiación fetal.', true, 'La dosis de la mayoría de estudios está muy por debajo del umbral de daño (50 mGy).'],
+     ['La tocólisis está indicada de rutina en todo trauma con contracciones.', false, 'Las contracciones pueden ser signo de desprendimiento; no se indica de rutina.'] ]},
+   { s:'cor', tronco:'Trauma cardiaco:', items:[
+     ['La tríada de Beck incluye hipotensión, ingurgitación yugular y ruidos cardiacos apagados.', true, 'Está completa en una minoría de pacientes.'],
+     ['Un FAST pericárdico negativo descarta lesión cardiaca aun con hemotórax masivo izquierdo.', false, 'El hemotórax puede descomprimir el pericardio: falso negativo.'],
+     ['En el taponamiento se busca mantener la precarga, la frecuencia y la contractilidad.', true, '«Lleno, rápido y apretado».'],
+     ['La contusión miocárdica puede manifestarse con arritmias.', true, 'Son su forma más frecuente de presentación clínica.'],
+     ['La pericardiocentesis es el tratamiento definitivo del taponamiento traumático.', false, 'Es un puente; el definitivo es quirúrgico.'] ]},
+   { s:'tce', tronco:'Trauma craneoencefálico:', items:[
+     ['Un solo episodio de PAS <90 mmHg se asocia a mayor mortalidad en el TCE grave.', true, 'Hasta la duplica.'],
+     ['La hipoxemia (SpO₂ <90 %) empeora el pronóstico del TCE.', true, 'Junto con la hipotensión, es la principal lesión secundaria.'],
+     ['Los corticoides a dosis altas mejoran el pronóstico del TCE.', false, 'CRASH: aumentan la mortalidad; están contraindicados.'],
+     ['Deben evitarse la hiperglucemia y la hipertermia.', true, 'Ambas empeoran la lesión secundaria.'],
+     ['La solución salina hipertónica está contraindicada en la hipertensión intracraneana.', false, 'Es una opción de osmoterapia junto con el manitol.'] ]},
+   { s:'que', tronco:'Paciente quemado:', items:[
+     ['La regla de los nueves estima la superficie corporal quemada en adultos.', true, 'En niños se usa la tabla de Lund-Browder.'],
+     ['Las quemaduras de primer grado se incluyen en el cálculo de la reposición hídrica.', false, 'Solo se cuentan las de segundo y tercer grado.'],
+     ['La meta de diuresis en el adulto quemado es 0,5 mL/kg/h (aprox. 30–50 mL/h).', true, 'Se titula el ritmo de líquidos según la diuresis.'],
+     ['Las quemaduras eléctricas de alto voltaje pueden requerir más líquidos y producir mioglobinuria.', true, 'Meta de diuresis de 1 mL/kg/h si hay mioglobinuria.'],
+     ['La sobrerreanimación con líquidos («fluid creep») no tiene consecuencias clínicas.', false, 'Causa síndrome compartimental abdominal y de extremidades y edema pulmonar.'] ]},
+   { s:'ger', tronco:'Trauma en el adulto mayor:', items:[
+     ['La fragilidad predice mayor morbimortalidad tras el trauma en el adulto mayor.', true, 'Más que la edad cronológica.'],
+     ['Los anticoagulantes orales directos no requieren considerarse en la reversión.', false, 'Idarucizumab para dabigatrán; andexanet o CCP para anti-Xa.'],
+     ['El delirium posoperatorio se asocia a peor pronóstico funcional.', true, 'Y a mayor mortalidad e institucionalización.'],
+     ['En el adulto mayor suelen requerirse dosis menores de inductores.', true, 'Por menor volumen de distribución central y gasto cardiaco.'],
+     ['La cirugía de la fractura de cadera debe diferirse más de 72 h para optimizar al paciente.', false, 'Se recomienda en las primeras 24–48 h.'] ]},
+   { s:'reg', tronco:'Anestesia regional y trauma:', items:[
+     ['La analgesia regional puede reducir el delirium en la fractura de cadera.', true, 'Al disminuir el dolor y el consumo de opioides.'],
+     ['El dolor irruptivo pese a un bloqueo eficaz puede indicar síndrome compartimental.', true, 'Debe evaluarse de inmediato.'],
+     ['La ecografía elimina por completo el riesgo de toxicidad sistémica por anestésicos locales.', false, 'Lo reduce pero no lo elimina.'],
+     ['La epidural torácica está contraindicada en todo paciente con fracturas costales.', false, 'Es una técnica de referencia si no hay contraindicaciones.'],
+     ['Con ácido acetilsalicílico en monoterapia puede realizarse un bloqueo neuroaxial.', true, 'ASRA: sin precauciones adicionales.'] ]}
+  ],
+  emq: [
+   { tema:'Elección del bloqueo regional en trauma', instr:'Para cada lesión elija el bloqueo PRINCIPAL más apropiado. Cada opción puede usarse una vez, más de una vez o ninguna.',
+     opciones:['Bloqueo interescalénico','Bloqueo supraclavicular','Bloqueo pericapsular de cadera (PENG)','Bloqueo del plano del erector de la columna','Bloqueo del ciático a nivel poplíteo','Bloqueo del plano transverso del abdomen (TAP)','Bloqueo de la vaina de los rectos','Bloqueo del canal aductor'],
+     items:[
+      ['Fractura de húmero proximal en paciente sin enfermedad pulmonar.', 'Bloqueo interescalénico', 'Cubre el hombro (raíces C5–C6); paraliza el hemidiafragma.'],
+      ['Fractura de radio distal para reducción abierta.', 'Bloqueo supraclavicular', 'Cubre todo el miembro superior por debajo del hombro.'],
+      ['Fracturas costales posteriores múltiples unilaterales en paciente con enoxaparina profiláctica.', 'Bloqueo del plano del erector de la columna', 'Bloqueo fascial con menor riesgo de sangrado que la epidural.'],
+      ['Fractura de calcáneo para osteosíntesis.', 'Bloqueo del ciático a nivel poplíteo', 'El ciático inerva el talón y gran parte del pie.'],
+      ['Fractura de cuello femoral, analgesia en urgencias.', 'Bloqueo pericapsular de cadera (PENG)', 'Analgesia de cadera con preservación motora relativa.'] ]},
+   { tema:'Fármacos y medidas en escenarios de trauma', instr:'Para cada situación elija la intervención MÁS apropiada.',
+     opciones:['Hidroxocobalamina','Ácido tranexámico','Concentrado de complejo protrombínico (4 factores)','Idarucizumab','Calcio IV (cloruro o gluconato)','Solución salina hipertónica','Emulsión lipídica al 20 %','Inmunoglobulina anti-D','Dantroleno','Sugammadex'],
+     items:[
+      ['Paciente anticoagulado con dabigatrán y hemorragia intracraneal traumática.', 'Idarucizumab', 'Anticuerpo monoclonal específico contra dabigatrán (5 g IV).'],
+      ['Transfusión masiva con calcio iónico de 0,8 mmol/L e hipotensión.', 'Calcio IV (cloruro o gluconato)', 'El citrato de los hemoderivados quela el calcio; meta Ca²⁺ >1,1 mmol/L.'],
+      ['Signos de herniación transtentorial mientras se prepara la craneotomía.', 'Solución salina hipertónica', 'Osmoterapia como puente (o manitol).'],
+      ['Gestante Rh negativa tras un trauma abdominal.', 'Inmunoglobulina anti-D', 'En las primeras 72 h.'],
+      ['Hemorragia traumática significativa a 1 hora de la lesión.', 'Ácido tranexámico', 'CRASH-2: 1 g en 10 min + 1 g en 8 h, dentro de las 3 h.'] ]}
+  ],
+  seq: [
+   { titulo:'Revisión primaria del trauma (ATLS 11.ª edición)', instr:'Ordene los pasos de PRIMERO a ÚLTIMO.', pasos:[
+     'x — Control de la hemorragia externa exanguinante',
+     'A — Vía aérea con restricción del movimiento de la columna cervical',
+     'B — Respiración, ventilación y oxigenación',
+     'C — Circulación y control de la hemorragia interna',
+     'D — Déficit neurológico',
+     'E — Exposición y control de la temperatura' ],
+     e:'ATLS 11 (2025) adopta el xABCDE: el control de la hemorragia exanguinante externa (torniquete, presión directa, hemostáticos) precede a la vía aérea.' },
+   { titulo:'Hipertensión intracraneana en el TCE grave (escalonamiento por niveles, SIBICC)', instr:'Ordene las medidas de la PRIMERA a la ÚLTIMA en escalar.', pasos:[
+     'Cabecera a 30°, analgesia y sedación, normocapnia, normotermia y oxigenación',
+     'Osmoterapia (salina hipertónica o manitol) y drenaje de LCR',
+     'Hipocapnia leve (PaCO₂ 32–35 mmHg) y prueba de relajación neuromuscular',
+     'Coma barbitúrico o craniectomía descompresiva' ],
+     e:'SIBICC: nivel 0 (medidas básicas) → nivel 1 → nivel 2 → nivel 3 (medidas de rescate).' }
+  ],
+  calc: [
+   { q:'Adulto de 70 kg con quemaduras de 2.º y 3.er grado en el 40 % de la superficie corporal. Usando 2 mL/kg/%SCQ (ATLS), ¿cuál es el volumen total de Ringer lactato para las primeras 24 h?', unidad:'mL', ans:5600, tol:0, e:'2 × 70 × 40 = 5600 mL en 24 h.' },
+   { q:'Con el mismo paciente (reanimación iniciada en el momento de la quemadura), ¿a cuántos mL/h debe infundir durante las primeras 8 horas?', unidad:'mL/h', ans:350, tol:0, e:'La mitad (2800 mL) en las primeras 8 h desde la quemadura: 2800 ÷ 8 = 350 mL/h; luego se titula por diuresis.' },
+   { q:'Paciente con TCE: PA 110/65 mmHg (PAM 80 mmHg) y PIC de 25 mmHg. ¿Cuál es la presión de perfusión cerebral?', unidad:'mmHg', ans:55, tol:0, e:'PPC = PAM − PIC = 80 − 25 = 55 mmHg (meta BTF: 60–70 mmHg).' }
+  ]
+ }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+//  AMPLIACIÓN DEL BANCO (×2) — se agrega a los bancos anteriores
+// ═══════════════════════════════════════════════════════════════════
+EXAMS.obs.sba.push(
+ { s:'fis', q:'Gestante a término en trabajo de parto activo, con dosis previas de meperidina, requiere anestesia general para cesárea urgente. ¿Cuál factor aumenta MÁS su riesgo de broncoaspiración?',
+   o:['Trabajo de parto y opioides que retrasan el vaciamiento','La progesterona que aumenta el tono del esfínter esofágico','El mayor pH gástrico inducido por la gastrina placentaria','La mayor motilidad intestinal propia del tercer trimestre'], a:0,
+   e:'En el embarazo sin trabajo de parto el vaciamiento gástrico es normal; el trabajo de parto, el dolor y los opioides sistémicos lo enlentecen. Además la progesterona DISMINUYE el tono del esfínter esofágico inferior y la gastrina placentaria AUMENTA la acidez (pH más bajo).' },
+ { s:'fis', q:'¿Cuál de los siguientes cambios de la coagulación es característico del embarazo a término?',
+   o:['Aumento de la proteína S y de la antitrombina III','Aumento del fibrinógeno y de los factores VII y X','Prolongación del TP y del TTPa por hemodilución','Disminución del fibrinógeno a menos de 2 g/L'], a:1,
+   e:'El embarazo es un estado protrombótico: aumentan el fibrinógeno (4–6 g/L) y los factores VII, VIII, IX, X y XII; la proteína S disminuye y el TP/TTPa son normales o algo acortados. Un fibrinógeno <2 g/L es anormal en la gestante.' },
+ { s:'fis', q:'En una gestante sana del tercer trimestre, ¿cuál de los siguientes valores de creatinina sérica sugiere disfunción renal?',
+   o:['0,4 mg/dL','0,5 mg/dL','0,6 mg/dL','1,0 mg/dL'], a:3,
+   e:'La tasa de filtración glomerular aumenta ~50 % en el embarazo, por lo que la creatinina normal es 0,4–0,6 mg/dL. Un valor de 1,0 mg/dL, «normal» fuera del embarazo, sugiere compromiso renal (p. ej., preeclampsia).' },
+ { s:'fis', q:'¿Por qué se recomienda un tubo endotraqueal de menor calibre (6,0–7,0 mm) en la gestante a término?',
+   o:['Edema e ingurgitación de la mucosa respiratoria','Menor diámetro traqueal por compresión del útero','Mayor riesgo de broncoespasmo con tubos grandes','Disminución del anillo cricoideo por la relaxina'], a:0,
+   e:'Los estrógenos y el aumento del volumen extracelular producen edema, ingurgitación capilar y friabilidad de la mucosa de la vía aérea superior (empeora en el trabajo de parto y en la preeclampsia): más sangrado y dificultad con tubos grandes.' },
+
+ { s:'card', q:'Gestante de 36 semanas con prótesis valvular mecánica mitral, anticoagulada con warfarina. ¿Cuál es la planeación correcta de la anticoagulación para el parto (ESC)?',
+   o:['Mantener la warfarina hasta el día del parto programado','Suspender toda anticoagulación desde la semana 32','Pasar a heparina y luego a HNF IV antes del parto','Cambiar a apixabán por su vida media más corta'], a:2,
+   e:'Hacia la semana 36 se suspende la warfarina y se pasa a HBPM con control de anti-Xa o a HNF; ~36 h antes del parto se cambia a HNF IV, que se suspende 4–6 h antes del neuroeje o del parto. Los anticoagulantes directos están contraindicados en válvulas mecánicas.' },
+ { s:'card', q:'Gestante con hipertensión arterial pulmonar grave en cesárea; presenta hipoxemia y falla del VD intraoperatoria. ¿Cuál medida reduce de forma selectiva la resistencia vascular pulmonar?',
+   o:['Ketamina en dosis altas para sostener la presión','Óxido nítrico inhalado, evitando la hipoxemia','Ventilación con PEEP alta de 15 cmH₂O sostenida','Metilergonovina IV para disminuir el sangrado'], a:1,
+   e:'El óxido nítrico inhalado (o prostaciclinas inhaladas) es un vasodilatador pulmonar selectivo. Se deben evitar hipoxemia, hipercapnia, acidosis, hipotermia y presiones intratorácicas altas; la metilergonovina aumenta la RVP.' },
+ { s:'card', q:'Gestante de 32 semanas con miocardiopatía periparto y congestión. ¿Cuál fármaco está CONTRAINDICADO durante el embarazo?',
+   o:['Hidralazina con nitratos para reducir la poscarga','Metoprolol para el control de la frecuencia cardiaca','Furosemida para el manejo de la congestión pulmonar','Enalapril u otro IECA por su toxicidad fetal'], a:3,
+   e:'IECA, ARA-II, ARNI y antagonistas de mineralocorticoides están contraindicados en el embarazo (fetotoxicidad renal). Se usan betabloqueadores, hidralazina-nitratos y diuréticos con cautela; los IECA pueden iniciarse en el posparto.' },
+ { s:'card', q:'Gestante de 34 semanas con síndrome de Marfan y raíz aórtica de 47 mm. ¿Cuál es el plan de nacimiento MÁS apropiado?',
+   o:['Parto vaginal con pujo activo y expulsivo prolongado','Cesárea programada con control estricto de PA y FC','Inducción con oxitocina en bolos rápidos repetidos','Anestesia general sin control de la frecuencia cardiaca'], a:1,
+   e:'En el Marfan con aorta >45 mm el riesgo de disección es alto: se recomienda cesárea en un centro con cirugía cardiaca, betabloqueador y control estricto de la PA y la FC, evitando picos hipertensivos (laringoscopia, dolor).' },
+
+ { s:'rojo', q:'Puérpera con hemorragia posparto: útero firme y contraído, placenta completa y sangrado rojo rutilante continuo. ¿Cuál es la causa MÁS probable?',
+   o:['Tono: atonía uterina que persiste pese al masaje','Tejido: retención de cotiledones o membranas','Trauma: desgarro del cuello o del canal vaginal','Trombina: coagulopatía hereditaria desconocida'], a:2,
+   e:'Con útero contraído y placenta completa, el sangrado rojo rutilante continuo orienta a trauma del canal del parto (cérvix, vagina, periné): exploración bajo buena analgesia y reparación. Revisar siempre las 4 T.' },
+ { s:'rojo', q:'Puérpera normotensa con asma, con atonía uterina que no responde a la oxitocina. ¿Cuál uterotónico está CONTRAINDICADO?',
+   o:['Misoprostol 800 µg por vía sublingual','Carboprost (15-metil PGF₂α) intramuscular','Metilergonovina 0,2 mg por vía intramuscular','Carbetocina 100 µg por vía intravenosa'], a:1,
+   e:'El carboprost (PGF₂α) produce broncoespasmo y está contraindicado en el asma. La metilergonovina se contraindica en hipertensión, preeclampsia y cardiopatía, no en el asma; el misoprostol es seguro en asmáticas.' },
+ { s:'rojo', q:'Según la clasificación del choque del Código Rojo (se usa el parámetro MÁS alterado), una puérpera agitada, con PAS de 75 mmHg y FC de 125 lpm, tiene choque:',
+   o:['Compensado (pérdida 10–15 %)','Leve (pérdida 16–25 %)','Moderado (pérdida 26–35 %)','Severo (pérdida >35 %)'], a:3,
+   e:'Código Rojo: severo = PAS <70, FC >120, letargia o inconsciencia (>35 %); moderado = PAS 70–79, FC 101–120, agitación. Se clasifica por el parámetro más alterado: la FC de 125 la ubica en choque SEVERO.' },
+ { s:'rojo', q:'Gestante con placenta previa y sospecha de acretismo (dos cesáreas previas), programada para cesárea. ¿Cuál es la planeación anestésica MÁS adecuada?',
+   o:['Raquídea de dosis única sin reserva de hemoderivados','Cesárea de urgencia solo al inicio de las contracciones','Centro de referencia, accesos gruesos y hemoderivados','Anestesia general obligatoria desde el inicio en todos'], a:2,
+   e:'El espectro de placenta acreta exige cirugía programada en un centro con equipo multidisciplinario, accesos venosos gruesos, línea arterial, hemoderivados y recuperador celular disponibles. El neuroeje es aceptable con conversión a general según el sangrado.' },
+
+ { s:'neu', q:'Gestante con catéter epidural de parto funcionando adecuadamente requiere cesárea urgente categoría 2. ¿Cuál solución logra la extensión epidural más rápida y confiable?',
+   o:['Bupivacaína 0,0625 % con fentanilo a 10 mL/h','Ropivacaína 0,2 % en bolos de 5 mL cada 15 min','Lidocaína 2 % con epinefrina y bicarbonato','Morfina epidural 3 mg como único fármaco'], a:2,
+   e:'La lidocaína al 2 % con epinefrina (± bicarbonato y fentanilo) en dosis fraccionadas de 15–20 mL tiene inicio rápido para extender el bloqueo a T4. Las soluciones diluidas de analgesia no producen anestesia quirúrgica.' },
+ { s:'neu', q:'¿Cuál factor se asocia a MAYOR riesgo de falla al convertir una analgesia epidural de parto en anestesia para cesárea?',
+   o:['Varios bolos de rescate durante el parto','Analgesia epidural con duración menor de 2 horas','Bloqueo sensitivo bilateral y simétrico en T10','Índice de masa corporal menor de 25 kg/m²'], a:0,
+   e:'Predictores de falla de conversión: múltiples bolos de rescate por analgesia insuficiente, urgencia de la cesárea, mayor duración de la epidural y obesidad. Un catéter que requiere rescates frecuentes debe recolocarse temprano.' },
+ { s:'neu', q:'Comparada con la epidural convencional, ¿cuál es la principal ventaja de la técnica epidural con punción dural (DPE) para la analgesia del parto?',
+   o:['Aumenta el bloqueo motor y la profundidad anestésica','Mejora la calidad y la bilateralidad del bloqueo','Permite inyectar el anestésico directo en el LCR','Elimina por completo el riesgo de cefalea pospunción'], a:1,
+   e:'En la DPE se perfora la duramadre con aguja raquídea fina sin inyectar en el LCR; el paso de solución epidural a través del orificio mejora la calidad, la bilateralidad y la cobertura sacra, con menos efectos adversos que la CSE.' },
+ { s:'neu', q:'Gestante con contraindicación absoluta para el neuroeje solicita analgesia del parto. ¿Cuál es la opción sistémica MÁS eficaz y su requisito?',
+   o:['Meperidina IM cada 2 h sin monitoría adicional','Morfina IV en infusión continua a dosis altas','Ketorolaco IV como único analgésico del parto','Remifentanilo en PCA con vigilancia 1:1'], a:3,
+   e:'La PCA de remifentanilo es la analgesia sistémica más eficaz para el parto, pero produce desaturación y apnea: exige oximetría continua, oxígeno disponible y vigilancia uno a uno. La meperidina tiene metabolito activo en el neonato.' },
+
+ { s:'the', q:'¿Cuál conjunto de hallazgos define el síndrome HELLP?',
+   o:['Hipertensión, edema, leucocitosis y proteinuria','Hemólisis, transaminasas altas y plaquetas bajas','Hiperbilirrubinemia, hipoglucemia y plaquetopenia','Hemoconcentración, edema pulmonar y oliguria'], a:1,
+   e:'HELLP: Hemolysis (LDH elevada, esquistocitos, haptoglobina baja), Elevated Liver enzymes y Low Platelets (<100.000/µL). La hipoglucemia marcada orienta a hígado graso agudo del embarazo.' },
+ { s:'the', q:'Gestante de 36 semanas que presenta una convulsión tónico-clónica (eclampsia) sin haber recibido sulfato de magnesio. ¿Cuál es el tratamiento de elección?',
+   o:['Diazepam 10 mg IV como fármaco de primera elección','Fenitoína 15 mg/kg IV en infusión lenta de 30 min','Sulfato de magnesio 4–6 g IV en 15–20 minutos','Levetiracetam 1 g IV seguido de cesárea inmediata'], a:2,
+   e:'El sulfato de magnesio es superior a diazepam y fenitoína para tratar y prevenir la recurrencia de la eclampsia (Collaborative Eclampsia Trial). Impregnación de 4–6 g IV y mantenimiento de 1–2 g/h; proteger la vía aérea y estabilizar antes del nacimiento.' },
+ { s:'the', q:'Puérpera de 5 días, sin antecedente hipertensivo, consulta por cefalea intensa y PA 170/112 mmHg. ¿Cuál es la conducta CORRECTA?',
+   o:['Asumir cefalea pospunción y colocar parche hemático','Preeclampsia posparto: antihipertensivo y magnesio','Dar alta con acetaminofén y control en una semana','Iniciar un triptán para migraña sin otros estudios'], a:1,
+   e:'La preeclampsia y la eclampsia pueden aparecer hasta 6 semanas posparto. Una cefalea con hipertensión grave es preeclampsia con criterios de severidad hasta demostrar lo contrario: antihipertensivo IV, sulfato de magnesio y estudio (descartar también hemorragia o trombosis venosa cerebral).' },
+ { s:'the', q:'Gestante con preeclampsia con criterios de severidad en trabajo de parto. ¿Cuál es la estrategia de líquidos IV recomendada?',
+   o:['Liberal, 150 mL/h para prevenir la oliguria','Bolo de 2 L antes de toda analgesia neuroaxial','Restrictiva (~80 mL/h) con balance estricto','Coloides de rutina para expandir el intravascular'], a:2,
+   e:'Por la fuga capilar y la baja presión oncótica, el riesgo de edema pulmonar es alto: líquidos restrictivos (~80 mL/h incluyendo infusiones de fármacos) y balance estricto. La oliguria aislada no justifica bolos repetidos.' },
+
+ { s:'sep', q:'Puérpera con endometritis poscesárea, febril y estable. ¿Cuál es el esquema antibiótico empírico de elección?',
+   o:['Ampicilina sola por vía oral durante 7 días','Clindamicina más gentamicina intravenosa','Ciprofloxacina oral en monoterapia por 10 días','Metronidazol intravenoso en monoterapia'], a:1,
+   e:'La endometritis poscesárea es polimicrobiana (incluye anaerobios): clindamicina + gentamicina IV es el esquema clásico de elección; se agrega ampicilina si no hay respuesta o se sospecha enterococo.' },
+ { s:'sep', q:'Mujer de 24 años con aborto séptico, choque y restos ovulares retenidos. Además de la reanimación y el antibiótico, ¿qué medida NO debe retrasarse?',
+   o:['Esperar 48 h de antibiótico antes de intervenir','Histerectomía de entrada en todos los casos','Tocolíticos para evitar la expulsión de restos','Evacuación uterina para el control del foco'], a:3,
+   e:'El control del foco es parte de la reanimación de la sepsis: la evacuación uterina debe hacerse en cuanto se inicia el antibiótico y se estabiliza a la paciente. La histerectomía se reserva para necrosis, perforación o falla de la evacuación.' },
+ { s:'sep', q:'Choque séptico materno que persiste con noradrenalina a 0,3 µg/kg/min durante más de 4 horas. Según Surviving Sepsis 2021, ¿qué corticoide se sugiere agregar?',
+   o:['Dexametasona 40 mg/día IV durante 4 días','Metilprednisolona 1 g/día IV durante 3 días','Hidrocortisona 200 mg/día IV fraccionada','Prednisona 50 mg/día por vía oral por 7 días'], a:2,
+   e:'SSC 2021 sugiere hidrocortisona 200 mg/día IV (50 mg cada 6 h o infusión) cuando se requiere noradrenalina ≥0,25 µg/kg/min por ≥4 h. Los pulsos de metilprednisolona o dexametasona no están indicados en el choque séptico.' },
+ { s:'sep', q:'Puérpera con choque, eritrodermia y dolor desproporcionado en la herida; se sospecha infección invasiva por estreptococo del grupo A. ¿Qué antibiótico se agrega por su efecto antitoxina?',
+   o:['Vancomicina para cubrir enterococo resistente','Azitromicina para cubrir gérmenes atípicos','Clindamicina para inhibir las toxinas','Metronidazol para cubrir anaerobios estrictos'], a:2,
+   e:'La clindamicina inhibe la síntesis proteica bacteriana y la producción de exotoxinas del SGA (síndrome de choque tóxico), y se combina con un betalactámico. Se requiere desbridamiento temprano si hay fascitis.' }
+);
+
+EXAMS.obs.mtf.push(
+ { s:'fis', tronco:'Cambios respiratorios y de la vía aérea en el embarazo:', items:[
+   ['El volumen minuto aumenta alrededor de 45–50 %.', true, 'Sobre todo por aumento del volumen corriente.'],
+   ['El consumo de oxígeno disminuye al término.', false, 'Aumenta 20–30 %.'],
+   ['La clasificación de Mallampati puede empeorar durante el trabajo de parto.', true, 'Por edema de la vía aérea; reevaluar antes de la anestesia.'],
+   ['La CAM de los anestésicos inhalados aumenta en el embarazo.', false, 'Disminuye.'],
+   ['La PaO₂ de la gestante es ligeramente mayor que la de la no gestante.', true, 'Por la hiperventilación (≈100–105 mmHg).'] ]},
+ { s:'card', tronco:'Anestesia en la gestante cardiópata:', items:[
+   ['En la estenosis aórtica grave debe evitarse la caída súbita de la RVS.', true, 'Reduce la perfusión coronaria.'],
+   ['La insuficiencia mitral tolera bien la vasodilatación del neuroeje.', true, 'La reducción de la poscarga favorece el flujo anterógrado.'],
+   ['La taquicardia es beneficiosa en la estenosis mitral.', false, 'Acorta la diástole y eleva la presión auricular izquierda.'],
+   ['Toda cardiopatía requiere cesárea electiva.', false, 'Se prefiere el parto vaginal con analgesia neuroaxial en la mayoría.'],
+   ['El posparto inmediato es un período de alto riesgo de descompensación.', true, 'Por la autotransfusión y los cambios de volumen.'] ]},
+ { s:'rojo', tronco:'Manejo de la hemorragia obstétrica:', items:[
+   ['El balón de taponamiento intrauterino es una medida de segunda línea en la atonía.', true, 'Tras fallar los uterotónicos.'],
+   ['La metilergonovina está contraindicada en la paciente hipertensa.', true, 'Produce vasoconstricción e hipertensión.'],
+   ['El misoprostol tiene inicio de acción más rápido que la oxitocina IV.', false, 'La oxitocina IV actúa en 1–2 min; el misoprostol es más lento.'],
+   ['En choque no se debe esperar la hemoglobina para iniciar la transfusión.', true, 'La hemoglobina inicial subestima la pérdida aguda.'],
+   ['El índice de choque no depende de la frecuencia cardiaca.', false, 'IC = FC / PAS.'] ]},
+ { s:'neu', tronco:'Anestesia neuroaxial para cesárea:', items:[
+   ['Para la cesárea se requiere un nivel sensitivo de T4.', true, 'Al tacto ligero/frío, para evitar dolor visceral peritoneal.'],
+   ['La fenilefrina puede causar bradicardia refleja.', true, 'Por el barorreflejo; puede reducir el gasto cardiaco.'],
+   ['La raquídea tiene un inicio más lento que la epidural.', false, 'La raquídea es más rápida.'],
+   ['En obstetricia, la anestesia general tiene más complicaciones de vía aérea que el neuroeje.', true, 'Por eso se prefiere el neuroeje.'],
+   ['El fentanilo intratecal elimina la necesidad de analgesia posoperatoria.', false, 'Su efecto dura 2–4 h; se requiere morfina y multimodal.'] ]},
+ { s:'the', tronco:'Sulfato de magnesio en obstetricia:', items:[
+   ['Se elimina principalmente por vía renal.', true, 'La oliguria favorece la toxicidad.'],
+   ['La pérdida del reflejo patelar aparece antes que la depresión respiratoria.', true, 'Por eso se vigila el reflejo.'],
+   ['Se continúa 24 h después del parto o de la última convulsión.', true, 'Período de mayor riesgo.'],
+   ['Disminuye la sensibilidad a los relajantes no despolarizantes.', false, 'La aumenta.'],
+   ['Debe suspenderse siempre antes de una cesárea.', false, 'Se mantiene durante la cesárea.'] ]},
+ { s:'sep', tronco:'Infección y neuroeje en obstetricia:', items:[
+   ['Gorro, mascarilla y clorhexidina reducen el riesgo de infección neuroaxial.', true, 'Asepsia completa obligatoria.'],
+   ['La meningitis posraquídea suele deberse a estreptococos de la flora oral.', true, 'Por eso es obligatorio el uso de mascarilla.'],
+   ['La infección cutánea en el sitio de punción contraindica el neuroeje.', true, 'Contraindicación absoluta en ese sitio.'],
+   ['El absceso epidural se manifiesta típicamente en las primeras 2 horas.', false, 'Suele aparecer días después.'],
+   ['La fiebre intraparto asociada a epidural indica siempre infección.', false, 'Puede ser inflamatoria no infecciosa.'] ]}
+);
+
+EXAMS.obs.emq.push(
+ { tema:'Cardiopatía en el embarazo: conducta anestésica', instr:'Para cada situación elija la medida MÁS apropiada. Cada opción puede usarse una vez, más de una vez o ninguna.',
+   opciones:['Epidural titulada lentamente','Raquídea convencional de dosis única','Betabloqueador para control de la FC','Óxido nítrico inhalado','Bromocriptina','Heparina no fraccionada IV','Metilergonovina','Warfarina'],
+   items:[
+    ['Estenosis mitral grave con taquicardia y edema pulmonar en trabajo de parto.', 'Betabloqueador para control de la FC', 'Prolongar la diástole mejora el llenado del VI.'],
+    ['Hipertensión pulmonar grave con crisis de hipoxemia intraoperatoria.', 'Óxido nítrico inhalado', 'Vasodilatador pulmonar selectivo.'],
+    ['Miocardiopatía periparto con FEVI de 25 % en el posparto: fármaco que suprime la prolactina.', 'Bromocriptina', 'Con anticoagulación profiláctica.'],
+    ['Válvula mecánica a las 38 semanas: anticoagulante que se suspende 4–6 h antes del parto.', 'Heparina no fraccionada IV', 'Vida media corta y reversible con protamina.'],
+    ['Estenosis aórtica grave con FEVI conservada para cesárea.', 'Epidural titulada lentamente', 'Evita la caída brusca de la RVS.'] ]},
+ { tema:'Hemorragia obstétrica: causa más probable', instr:'Para cada cuadro clínico elija la causa MÁS probable del sangrado o del choque.',
+   opciones:['Atonía uterina','Retención de tejido placentario','Desgarro del canal del parto','Inversión uterina','Ruptura uterina','Coagulación intravascular diseminada','Acretismo placentario','Hematoma vulvar'],
+   items:[
+    ['Tras tracción del cordón: dolor intenso, choque desproporcionado al sangrado, masa en la vagina y fondo uterino no palpable.', 'Inversión uterina', 'Reposición inmediata con relajación uterina.'],
+    ['Trabajo de parto con cesárea previa: dolor súbito, pérdida de la estación fetal y bradicardia fetal.', 'Ruptura uterina', 'Laparotomía urgente.'],
+    ['Útero blando, por encima del ombligo, que mejora transitoriamente con el masaje.', 'Atonía uterina', 'Causa más frecuente de HPP.'],
+    ['En una cesárea con placenta previa y dos cesáreas previas, la placenta no se desprende.', 'Acretismo placentario', 'No intentar extraerla a la fuerza.'],
+    ['Desprendimiento grave de placenta con sangrado en sitios de punción y fibrinógeno de 0,8 g/L.', 'Coagulación intravascular diseminada', 'Reponer fibrinógeno y tratar la causa.'] ]}
+);
+
+EXAMS.obs.seq.push(
+ { titulo:'Anestesia raquídea para cesárea electiva', instr:'Ordene los pasos de PRIMERO a ÚLTIMO.', pasos:[
+   'Verificar consentimiento, ayuno, laboratorios y lista de chequeo',
+   'Monitorizar y asegurar acceso venoso con la cocarga lista',
+   'Realizar la punción subaracnoidea e inyectar el anestésico',
+   'Posición supina con desplazamiento uterino e infusión de fenilefrina',
+   'Verificar el nivel sensitivo en T4 antes de la incisión' ],
+   e:'Preparación → monitorización → punción → posicionamiento con soporte vasopresor → comprobación del nivel antes de incidir.' },
+ { titulo:'Paro cardiaco en la gestante de más de 20 semanas', instr:'Ordene los pasos de PRIMERO a ÚLTIMO.', pasos:[
+   'Reconocer el paro, pedir ayuda y activar el equipo de paro materno',
+   'Iniciar compresiones de calidad con desplazamiento uterino manual',
+   'Si a los 4 minutos no hay circulación espontánea, iniciar la histerotomía',
+   'Extraer al feto hacia el minuto 5 y continuar la reanimación materna' ],
+   e:'AHA: RCP con desplazamiento uterino; histerotomía de reanimación a los 4 min sin RCE para extracción hacia el minuto 5.' }
+);
+
+EXAMS.obs.calc.push(
+ { q:'Prepara 30 UI de oxitocina en 500 mL de SSN. ¿A cuántos mL/h debe programar la bomba para infundir 7,5 UI/h?', unidad:'mL/h', ans:125, tol:0, e:'30 UI/500 mL = 0,06 UI/mL → 7,5 ÷ 0,06 = 125 mL/h.' },
+ { q:'Dispone de ampollas de ácido tranexámico de 500 mg en 5 mL. ¿Cuántos mL corresponden a la dosis de 1 g para la HPP?', unidad:'mL', ans:10, tol:0, e:'500 mg/5 mL = 100 mg/mL → 1000 mg ÷ 100 = 10 mL, en 10 minutos.' },
+ { q:'Bupivacaína hiperbárica al 0,5 %. ¿Cuántos mL contienen 10 mg para la raquídea de la cesárea?', unidad:'mL', ans:2, tol:0, e:'0,5 % = 5 mg/mL → 10 mg ÷ 5 = 2 mL.' }
+);
+
+// ─────────────────────────── TRAUMA ───────────────────────────
+EXAMS.tra.sba.push(
+ { s:'emb', q:'Gestante de 32 semanas tras un accidente de tránsito; la gasometría arterial muestra PaCO₂ de 40 mmHg. ¿Cuál es la interpretación CORRECTA?',
+   o:['Valor normal para esta edad gestacional avanzada','Hipoventilación relativa y falla inminente','Alcalosis respiratoria compensada, que es esperada','Hiperventilación por dolor, sin importancia clínica'], a:1,
+   e:'La PaCO₂ normal de la gestante es 28–32 mmHg. Una PaCO₂ de 40 mmHg indica hipoventilación relativa y falla respiratoria inminente (TCE, tórax inestable, sedación).' },
+ { s:'emb', q:'Gestante de 30 semanas con TCE y Glasgow de 7 requiere intubación. ¿Cuál es la consideración específica del embarazo MÁS importante?',
+   o:['Evitar preoxigenar para no retrasar la intubación','Prever vía aérea difícil y desaturación rápida','Usar un tubo de 8,5 mm por la vía aérea más amplia','Contraindicar la succinilcolina por el embarazo'], a:1,
+   e:'La gestante tiene menor CRF, mayor consumo de O₂, edema de la vía aérea y riesgo de aspiración: preoxigenación óptima, videolaringoscopio, tubo más pequeño y plan de vía aérea difícil. La succinilcolina puede usarse.' },
+ { s:'emb', q:'Gestante de 33 semanas tras colisión vehicular: dolor abdominal, útero hipertónico y doloroso, sangrado vaginal escaso y FC fetal de 100 lpm. ¿Cuál es el diagnóstico MÁS probable?',
+   o:['Desprendimiento prematuro de placenta','Placenta previa con sangrado activo','Trabajo de parto pretérmino simple','Rotura de membranas sin otra lesión'], a:0,
+   e:'El desprendimiento es la principal causa de muerte fetal en el trauma: dolor, hipertonía uterina y compromiso fetal, con sangrado externo que puede ser escaso (oculto). Puede causar CID.' },
+ { s:'emb', q:'En la gestante traumatizada que requiere estudios con radiación ionizante, ¿a partir de qué dosis fetal aumenta el riesgo de malformaciones?',
+   o:['Cualquier exposición fetal mayor de 1 mGy','Exposición fetal mayor de 5 mGy','Exposición fetal mayor de 50 mGy','Solo exposiciones mayores de 5000 mGy'], a:2,
+   e:'ACOG: dosis fetales <50 mGy no se asocian a aumento de anomalías ni de pérdida fetal; una TC de abdomen y pelvis expone usualmente a menos de 50 mGy. Nunca se omite un estudio necesario para la madre.' },
+
+ { s:'cor', q:'Paciente con lesión traumática contenida de la aorta torácica en espera de reparación endovascular. ¿Cuál es la meta hemodinámica?',
+   o:['FC <80 lpm y PAS 100–120 mmHg con esmolol','PAS >160 mmHg para asegurar la perfusión medular','Iniciar vasodilatador antes del betabloqueador','Permitir la taquicardia compensatoria sin tratar'], a:0,
+   e:'Terapia «anti-impulso»: betabloqueador primero (esmolol) para FC <80 y PAS 100–120 mmHg, reduciendo el estrés de la pared aórtica. El vasodilatador sin betabloqueo produce taquicardia refleja.' },
+ { s:'cor', q:'Paciente con hemotórax por trauma penetrante. ¿Cuál drenaje INICIAL al colocar el tubo de tórax indica toracotomía urgente (ATLS)?',
+   o:['Más de 500 mL al colocar el tubo','Más de 1500 mL al colocar el tubo','Más de 200 mL en las primeras 24 h','Más de 1000 mL en las primeras 24 h'], a:1,
+   e:'ATLS: drenaje inmediato ≥1500 mL, o sangrado continuo de 200 mL/h durante 2–4 h, o necesidad persistente de transfusión indican toracotomía.' },
+ { s:'cor', q:'Paciente con trauma torácico en ventilación mecánica presenta hipotensión súbita, aumento de la presión pico y ausencia de murmullo vesicular derecho. ¿Cuál es la conducta?',
+   o:['Radiografía de tórax antes de cualquier intervención','Aumentar la PEEP para mejorar la oxigenación','Bolo de vasopresor y esperar la tomografía','Descompresión inmediata con aguja o toracostomía'], a:3,
+   e:'El neumotórax a tensión es un diagnóstico clínico: descompresión inmediata (aguja en el 4.º–5.º espacio intercostal, línea axilar media, o toracostomía digital) y luego tubo de tórax. La presión positiva lo empeora rápidamente.' },
+ { s:'cor', q:'Paciente estable con lesión cardiaca contusa: ECG con extrasístoles ventriculares y troponina elevada. ¿Cuál es la conducta MÁS apropiada?',
+   o:['Alta con control ambulatorio en una semana','Monitoría ECG continua durante 24–48 h','Cateterismo cardiaco urgente de rutina','Pericardiocentesis diagnóstica inmediata'], a:1,
+   e:'EAST: un ECG anormal o la troponina elevada requieren hospitalización con monitoría continua (24–48 h). El ecocardiograma se indica si hay inestabilidad o arritmias significativas.' },
+
+ { s:'tce', q:'¿Cuál es la dosis habitual de manitol para el tratamiento de la hipertensión intracraneana en el TCE?',
+   o:['0,25–1 g/kg IV en bolo','5 g/kg IV en bolo único','0,01 g/kg IV en bolo','2–3 g/kg IV cada hora'], a:0,
+   e:'Manitol 0,25–1 g/kg IV en 15–20 min; evitar la hipovolemia (diurético osmótico). Alternativa: salina hipertónica (p. ej., 3 % o 7,5 %).' },
+ { s:'tce', q:'Paciente con TCE que, ante el estímulo doloroso, presenta extensión de las extremidades. ¿Cuál es su puntaje en la respuesta motora de Glasgow?',
+   o:['1 punto','2 puntos','3 puntos','4 puntos'], a:1,
+   e:'Respuesta motora: 6 obedece, 5 localiza, 4 retira, 3 flexión anormal (decorticación), 2 extensión anormal (descerebración), 1 ninguna.' },
+ { s:'tce', q:'Según la Brain Trauma Foundation, ¿cuál es la recomendación sobre la profilaxis anticonvulsiva en el TCE grave?',
+   o:['Profilaxis indefinida para prevenir crisis tardías','Fenitoína o levetiracetam durante 7 días','No está indicada en ningún paciente con TCE grave','Benzodiacepinas en infusión durante 30 días'], a:1,
+   e:'BTF: fenitoína (o levetiracetam) reduce las crisis postraumáticas TEMPRANAS (primeros 7 días); no previene las tardías, por lo que no se recomienda la profilaxis prolongada.' },
+ { s:'tce', q:'Según la Brain Trauma Foundation (4.ª edición), ¿cuál es la recomendación sobre la hipotermia en el TCE grave difuso?',
+   o:['Recomendada a 33 °C por 48 h en todos los TCE','Recomendada a 30 °C para reducir la PIC elevada','Obligatoria cuando el Glasgow es menor de 8','No se recomienda la hipotermia profiláctica'], a:3,
+   e:'La hipotermia profiláctica temprana (2,5 h) y de corta duración (48 h) no mejora el pronóstico y no se recomienda. Sí se debe evitar la hipertermia.' },
+
+ { s:'que', q:'Adulto con quemaduras de 2.º grado en toda la extremidad superior derecha y toda la cara anterior del tronco. Según la regla de los nueves, ¿cuál es el % de superficie corporal quemada?',
+   o:['18 %','27 %','36 %','45 %'], a:1,
+   e:'Extremidad superior completa = 9 % y cara anterior del tronco = 18 %: total 27 %.' },
+ { s:'que', q:'Durante el desbridamiento de un paciente con quemaduras del 40 %, ¿cuál medida intraoperatoria es ESENCIAL?',
+   o:['Sala fría para disminuir el sangrado','Normotermia con sala y líquidos tibios','Restringir hemoderivados aunque haya sangrado','Evitar la monitoría invasiva por la piel quemada'], a:1,
+   e:'El quemado pierde calor por la piel lesionada y la evaporación: la hipotermia aumenta el sangrado, la coagulopatía y el consumo de O₂. Sala a 28–32 °C, líquidos y gases tibios y mantas térmicas.' },
+ { s:'que', q:'En la fase hipermetabólica (después de 48 h) del gran quemado, ¿cuál cambio farmacológico es esperado?',
+   o:['Menor requerimiento de opioides por hipoalbuminemia','Mayor sensibilidad a los relajantes no despolarizantes','Menor gasto cardiaco y menor aclaramiento renal','Mayor requerimiento de opioides y de relajantes'], a:3,
+   e:'La fase hiperdinámica aumenta el gasto cardiaco y el aclaramiento; hay tolerancia a opioides y resistencia a los no despolarizantes (receptores extrasinápticos). Se requieren dosis mayores y titulación.' },
+ { s:'que', q:'Paciente con quemadura circunferencial de 3.er grado en el tórax presenta presiones de la vía aérea crecientes y dificultad para ventilar. ¿Cuál es la conducta?',
+   o:['Aumentar la sedación y la PEEP','Broncodilatadores y corticoide IV','Escarotomía torácica urgente','Ventilación de alta frecuencia'], a:2,
+   e:'La escara rígida circunferencial restringe la expansión torácica: escarotomía urgente para restablecer la distensibilidad. Lo mismo en extremidades con compromiso vascular.' },
+
+ { s:'ger', q:'En el anciano con fractura de cadera, ¿cuál medida tiene la MEJOR evidencia para reducir el delirium perioperatorio?',
+   o:['Haloperidol profiláctico de rutina a dosis bajas','Benzodiacepinas nocturnas para favorecer el sueño','Intervención multicomponente no farmacológica','Restricción física para evitar las caídas'], a:2,
+   e:'Las intervenciones multicomponente (orientación, movilización temprana, sueño, audífonos y gafas, hidratación, evitar fármacos deliriógenos, analgesia adecuada) reducen el delirium. Benzodiacepinas y restricciones lo empeoran.' },
+ { s:'ger', q:'Paciente de 80 años que toma apixabán, con hemorragia intracraneal traumática. ¿Cuál es la reversión recomendada?',
+   o:['Idarucizumab 5 g IV administrado en dos bolos','Protamina 1 mg por cada 100 UI de heparina','Vitamina K 10 mg IV como único agente reversor','Andexanet alfa o, si no hay, CCP de 4 factores'], a:3,
+   e:'Inhibidores del factor Xa (apixabán, rivaroxabán): andexanet alfa; si no está disponible, CCP de 4 factores (≈50 UI/kg). El idarucizumab es específico para dabigatrán.' },
+ { s:'ger', q:'Durante una hemiartroplastia cementada de cadera en una anciana, inmediatamente después de cementar aparecen hipoxemia, hipotensión y luego paro. ¿Cuál es el diagnóstico MÁS probable?',
+   o:['Síndrome de implantación del cemento óseo','Reacción anafiláctica al ácido tranexámico','Toxicidad por el anestésico local raquídeo','Hipertermia maligna de inicio tardío'], a:0,
+   e:'El síndrome de implantación del cemento óseo (embolia grasa y de médula, liberación de mediadores) produce hipoxemia, hipotensión, hipertensión pulmonar y paro. Prevención: hidratación, FiO₂ alta, comunicación con el cirujano y vasopresor listo.' },
+ { s:'ger', q:'Al inducir la anestesia en un anciano frágil de 85 años con hipovolemia, ¿cuál ajuste es el apropiado?',
+   o:['Aumentar la dosis por mayor volumen de distribución','Usar dosis plenas de propofol de 2,5 mg/kg','Evitar los vasopresores por riesgo de arritmias','Reducir y titular el hipnótico; inicio más lento'], a:3,
+   e:'En el anciano el volumen central y el gasto cardiaco son menores: el inicio es más lento y la sensibilidad mayor. Reducir dosis, titular lentamente y tener vasopresor listo para evitar la hipotensión.' },
+
+ { s:'reg', q:'Paciente con fracturas costales anterolaterales unilaterales. ¿Cuál bloqueo fascial es el MÁS adecuado?',
+   o:['Bloqueo interescalénico del plexo braquial','Bloqueo del plano del serrato anterior','Bloqueo del cuadrado lumbar bilateral','Bloqueo TAP subcostal de forma bilateral'], a:1,
+   e:'El bloqueo del serrato anterior cubre la pared torácica anterolateral (ramas cutáneas laterales de los intercostales). El erector de la columna es útil en fracturas posteriores.' },
+ { s:'reg', q:'Paciente con EPOC grave y fractura de húmero proximal. ¿Por qué se debe evitar el bloqueo interescalénico de alto volumen?',
+   o:['Paraliza casi siempre el hemidiafragma ipsilateral','Produce bloqueo del nervio vago de forma bilateral','Causa neumotórax en la mayoría de los casos','Bloquea la médula cervical de forma sistemática'], a:0,
+   e:'El interescalénico produce paresia del nervio frénico en casi el 100 % de los casos con volúmenes convencionales, lo que puede descompensar a pacientes con reserva respiratoria limitada. Alternativas: bajo volumen, tronco superior o supraescapular.' },
+ { s:'reg', q:'¿Cuál es la dosis máxima aproximada recomendada de bupivacaína SIN epinefrina para un bloqueo periférico?',
+   o:['2,5 mg/kg','4,5 mg/kg','7 mg/kg','10 mg/kg'], a:0,
+   e:'Bupivacaína ≈2–2,5 mg/kg (máximo ~175 mg sin epinefrina). Lidocaína: 4,5 mg/kg sin epinefrina y 7 mg/kg con epinefrina.' },
+ { s:'reg', q:'Paciente con fractura de la diáfisis femoral en urgencias. ¿Cuál bloqueo ofrece analgesia adecuada para la tracción y la movilización?',
+   o:['Bloqueo del ciático a nivel poplíteo','Bloqueo femoral o de la fascia ilíaca','Bloqueo del canal aductor distal','Bloqueo TAP lateral del lado ipsilateral'], a:1,
+   e:'El nervio femoral inerva la mayor parte del fémur y el cuádriceps (espasmo): el bloqueo femoral o de fascia ilíaca reduce el dolor y el uso de opioides en la fractura de diáfisis femoral.' }
+);
+
+EXAMS.tra.mtf.push(
+ { s:'emb', tronco:'Fisiología y trauma en la gestante:', items:[
+   ['El vaciamiento gástrico enlentecido en el trauma aumenta el riesgo de aspiración.', true, 'Considerar siempre estómago lleno.'],
+   ['La frecuencia cardiaca basal aumenta 10–15 lpm.', true, 'No confundir con choque, pero vigilar.'],
+   ['Un hematocrito de 32 % es anormal y exige transfusión.', false, 'Puede ser fisiológico (anemia dilucional).'],
+   ['Un fibrinógeno de 2 g/L es normal al término.', false, 'Normal 4–6 g/L; 2 g/L sugiere consumo.'],
+   ['El feto puede estar hipoperfundido aunque la madre esté normotensa.', true, 'La circulación uterina se sacrifica primero.'] ]},
+ { s:'cor', tronco:'Trauma torácico y anestesia:', items:[
+   ['El neumotórax a tensión es un diagnóstico clínico.', true, 'No se espera la radiografía.'],
+   ['El óxido nitroso es seguro en un neumotórax no drenado.', false, 'Expande los espacios con aire.'],
+   ['Antes de ventilar con presión positiva en un neumotórax debe considerarse el drenaje.', true, 'La presión positiva puede convertirlo en uno a tensión.'],
+   ['La actividad eléctrica sin pulso en trauma penetrante sugiere taponamiento o hipovolemia.', true, 'Causas reversibles a tratar de inmediato.'],
+   ['La ventilación con volúmenes altos es protectora en la contusión pulmonar.', false, 'Se recomienda ventilación protectora.'] ]},
+ { s:'tce', tronco:'Anestesia en el TCE:', items:[
+   ['Los anestésicos inhalados a más de 1 CAM pueden aumentar el flujo sanguíneo cerebral.', true, 'Por vasodilatación cerebral.'],
+   ['El propofol reduce el consumo metabólico cerebral de oxígeno.', true, 'Con acoplamiento flujo-metabolismo.'],
+   ['La dextrosa al 5 % es adecuada como líquido de mantenimiento.', false, 'Hipotónica: aumenta el edema cerebral.'],
+   ['La presión de perfusión cerebral objetivo es de 60–70 mmHg.', true, 'BTF.'],
+   ['La cabeza debe girarse lateralmente para facilitar el drenaje venoso.', false, 'Debe mantenerse neutra.'] ]},
+ { s:'que', tronco:'Paciente quemado (II):', items:[
+   ['La lesión por inhalación aumenta los requerimientos de líquidos.', true, 'Hasta 30–50 % más.'],
+   ['Las quemaduras eléctricas pueden causar arritmias.', true, 'Monitoría ECG indicada.'],
+   ['Se recomienda profilaxis antibiótica sistémica de rutina.', false, 'No reduce la infección y favorece resistencia.'],
+   ['El riesgo de hiperpotasemia por succinilcolina persiste hasta la cicatrización completa.', true, 'Puede durar meses.'],
+   ['La albúmina está contraindicada en toda la reanimación del quemado.', false, 'Puede usarse como rescate tras las primeras horas.'] ]},
+ { s:'ger', tronco:'Trauma en el adulto mayor (II):', items:[
+   ['La reserva fisiológica cardiovascular está disminuida.', true, 'Menor respuesta a catecolaminas.'],
+   ['La caída de la propia altura es un mecanismo frecuente de trauma grave.', true, 'Sobre todo con anticoagulación.'],
+   ['La CAM de los anestésicos inhalados aumenta con la edad.', false, 'Disminuye ~6 % por década.'],
+   ['El hematoma subdural puede manifestarse de forma tardía.', true, 'Por la atrofia cerebral.'],
+   ['Una FC normal descarta el choque en pacientes con betabloqueador.', false, 'El betabloqueador impide la taquicardia.'] ]},
+ { s:'reg', tronco:'Técnicas regionales en trauma (II):', items:[
+   ['El bloqueo de fascia ilíaca puede hacerse en urgencias por personal entrenado.', true, 'Recomendado en fractura de cadera.'],
+   ['Los catéteres perineurales prolongan la analgesia.', true, 'Útiles en fracturas múltiples o cirugías por etapas.'],
+   ['El bloqueo neuroaxial está indicado en el choque hipovolémico.', false, 'Contraindicado.'],
+   ['El déficit neurológico previo debe documentarse antes del bloqueo.', true, 'Por razones clínicas y médico-legales.'],
+   ['Agregar epinefrina a la solución impide toda toxicidad sistémica.', false, 'La reduce y sirve como marcador, pero no la impide.'] ]}
+);
+
+EXAMS.tra.emq.push(
+ { tema:'Trauma torácico: diagnóstico', instr:'Para cada cuadro clínico elija el diagnóstico MÁS probable.',
+   opciones:['Neumotórax a tensión','Taponamiento cardiaco','Hemotórax masivo','Tórax inestable con contusión pulmonar','Ruptura traumática de la aorta','Lesión cardiaca contusa','Ruptura diafragmática','Embolia aérea venosa'],
+   items:[
+    ['Hipotensión, ingurgitación yugular, desviación traqueal y ausencia unilateral del murmullo vesicular.', 'Neumotórax a tensión', 'Descompresión inmediata.'],
+    ['Hipotensión, ingurgitación yugular, murmullo vesicular conservado y ruidos cardiacos apagados.', 'Taponamiento cardiaco', 'Tríada de Beck.'],
+    ['Choque, matidez a la percusión y drenaje de 1600 mL al colocar el tubo de tórax.', 'Hemotórax masivo', 'Indicación de toracotomía.'],
+    ['Desaceleración a alta velocidad con mediastino ensanchado en la radiografía.', 'Ruptura traumática de la aorta', 'Confirmar con angioTC; control anti-impulso.'],
+    ['Segmento de la pared torácica con movimiento paradójico e hipoxemia.', 'Tórax inestable con contusión pulmonar', 'La hipoxemia se debe sobre todo a la contusión subyacente.'] ]},
+ { tema:'Paciente quemado: complicación más probable', instr:'Para cada situación elija la complicación MÁS probable.',
+   opciones:['Intoxicación por monóxido de carbono','Intoxicación por cianuro','Síndrome compartimental abdominal','Hiperpotasemia por succinilcolina','Rabdomiólisis por quemadura eléctrica','Obstrucción de la vía aérea por edema','Sepsis del quemado','Hipotermia'],
+   items:[
+    ['Tras 30 L de líquidos en 24 h: oliguria, presión pico alta y presión intravesical de 28 mmHg.', 'Síndrome compartimental abdominal', 'Complicación de la sobrerreanimación.'],
+    ['Día 12 de la quemadura: paro cardiaco con ondas T picudas inmediatamente después de la inducción.', 'Hiperpotasemia por succinilcolina', 'Receptores extrasinápticos.'],
+    ['Orina color té tras contacto con una línea de alta tensión.', 'Rabdomiólisis por quemadura eléctrica', 'Meta de diuresis de 1 mL/kg/h.'],
+    ['Bombero con cefalea, confusión y SpO₂ de pulso de 100 %.', 'Intoxicación por monóxido de carbono', 'Medir COHb por cooximetría.'],
+    ['Estridor progresivo y voz ronca 4 h después de una quemadura facial.', 'Obstrucción de la vía aérea por edema', 'Intubación temprana.'] ]}
+);
+
+EXAMS.tra.seq.push(
+ { titulo:'Intubación del paciente en choque hemorrágico (ATLS 11)', instr:'Ordene los pasos de PRIMERO a ÚLTIMO.', pasos:[
+   'Controlar la hemorragia e iniciar la reanimación con hemoderivados',
+   'Preoxigenar y preparar vasopresor y plan de vía aérea difícil',
+   'Inducir con hipnótico a dosis reducida y relajante neuromuscular',
+   'Intubar y confirmar la posición del tubo con capnografía',
+   'Ventilar con presiones bajas evitando la hiperventilación' ],
+   e:'ATLS 11 enfatiza reanimar el choque antes de la secuencia rápida para evitar el colapso posintubación.' },
+ { titulo:'Manejo inicial del gran quemado', instr:'Ordene los pasos de PRIMERO a ÚLTIMO.', pasos:[
+   'Detener el proceso de la quemadura: retirar ropa y fuentes de calor',
+   'Evaluar y asegurar la vía aérea ante sospecha de lesión por inhalación',
+   'Canalizar dos accesos venosos e iniciar líquidos según el %SCQ',
+   'Colocar sonda vesical y titular los líquidos según la diuresis' ],
+   e:'ATLS: detener la quemadura → vía aérea → reanimación hídrica → monitoría de la respuesta con la diuresis.' }
+);
+
+EXAMS.tra.calc.push(
+ { q:'Paciente con TCE que abre los ojos al dolor, emite palabras inapropiadas y retira la extremidad ante el dolor. ¿Cuál es su puntaje en la escala de Glasgow?', unidad:'puntos', ans:9, tol:0, e:'O2 + V3 + M4 = 9.' },
+ { q:'Debe infundir la segunda dosis de ácido tranexámico (1 g) diluida en 250 mL durante 8 horas. ¿A cuántos mL/h programa la bomba?', unidad:'mL/h', ans:31.25, tol:0.3, e:'250 mL ÷ 8 h = 31,25 mL/h (se acepta 31–31,5).' },
+ { q:'Paciente de 60 kg. Con bupivacaína al 0,5 % y una dosis máxima de 2,5 mg/kg, ¿cuál es el volumen MÁXIMO en mL?', unidad:'mL', ans:30, tol:0, e:'2,5 × 60 = 150 mg; 0,5 % = 5 mg/mL → 150 ÷ 5 = 30 mL.' }
+);
+
+
+// ═══ CONFIGURACIÓN DEL EXAMEN ═══
+const PARTS = [
+  { k:'A', tipo:'sba', nombre:'Selección múltiple de mejor respuesta', corto:'Selección múltiple', color:'var(--blue)', cls:'pA', min:30, peso:0.50,
+    desc:'20 casos clínicos tipo MIR / USMLE. Una sola respuesta correcta entre A, B, C y D. Puede navegar y cambiar respuestas hasta entregar.' },
+  { k:'B', tipo:'mtf', nombre:'Verdadero / falso múltiple', corto:'Verdadero / falso', color:'var(--violet)', cls:'pB', min:10, peso:0.20,
+    desc:'5 enunciados con 4 afirmaciones cada uno (20 ítems). Marque V o F en cada afirmación; cada una vale por separado.' },
+  { k:'C', tipo:'emq', nombre:'Emparejamiento extendido', corto:'Emparejamiento', color:'var(--teal)', cls:'pC', min:12, peso:0.15,
+    desc:'2 temas con una lista de 8–10 opciones y 5 situaciones cada uno (10 ítems). Elija la opción que mejor corresponde a cada situación.' },
+  { k:'D', tipo:'dec', nombre:'Secuencias y cálculos', corto:'Secuencias y cálculos', color:'var(--green)', cls:'pD', min:13, peso:0.15,
+    desc:'2 secuencias de actuación para ordenar (puntaje parcial por posición correcta) y 3 cálculos con UN SOLO número.' }
+];
+const N_SBA = 20, N_MTF_STEMS = 5, N_MTF_ITEMS = 4, N_EMQ = 2, N_SEQ = 2, N_CALC = 3;
+const L4 = ['A','B','C','D'];
+const LET = 'ABCDEFGHIJKL'.split('');
+
+// ═══ ESTADO ═══
+const st = { ex:null, year:'', parts:[], pi:0, timer:null, left:0, total:0, cur:0, scores:{}, timeouts:{}, sent:false };
+
+// ═══ UTILIDADES ═══
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function $(id){ return document.getElementById(id); }
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); window.scrollTo(0,0); }
+function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function limpia(t){ return String(t||'').trim().replace(/\s+/g,' ').toLowerCase().replace(/(^|[\s-])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()); }
+function num(v){ v=String(v).trim().replace(',', '.'); return /^-?\d+(\.\d+)?$/.test(v) ? parseFloat(v) : NaN; }
+function sub(id){ return EXAMS[st.ex].subtemas[id] || id; }
+
+// ═══ PANTALLA 1 ═══
+function initSetup(){
+  $('exgrid').innerHTML = Object.values(EXAMS).map(E=>`
+    <button type="button" class="excard" data-ex="${E.id}" style="background:${E.color}" onclick="pickEx('${E.id}')">
+      <div class="ck">✓</div><div class="ic">${E.icono}</div>
+      <div class="nm">${E.titulo}</div>
+      <div class="ds">${Object.values(E.subtemas).join(' · ')}</div>
+    </button>`).join('');
+  document.querySelectorAll('#yrs .yr').forEach(b=>b.onclick=()=>{ st.year=b.dataset.y; document.querySelectorAll('#yrs .yr').forEach(x=>x.classList.toggle('on',x===b)); });
+}
+function pickEx(id){
+  st.ex=id; document.documentElement.style.setProperty('--ex', EXAMS[id].color);
+  document.querySelectorAll('.excard').forEach(c=>c.classList.toggle('on', c.dataset.ex===id));
+}
+function toggleA2(){ const on=$('noa2').checked; $('a2').disabled=on; if(on) $('a2').value=''; }
+function fail(m){ const e=$('err'); e.textContent=m; e.style.display='block'; }
+
+function toInstructions(){
+  $('err').style.display='none';
+  if(!st.ex) return fail('Elija el examen: obstetricia o trauma.');
+  const n1=limpia($('n1').value), a1=limpia($('a1').value), sin=$('noa2').checked, a2=sin?'':limpia($('a2').value);
+  if(!n1||!a1) return fail('Escriba el primer nombre y el primer apellido.');
+  if(!a2&&!sin) return fail('Escriba el segundo apellido o marque «No tengo segundo apellido».');
+  let uni=$('uni').value;
+  if(!uni) return fail('Seleccione la universidad del posgrado.');
+  if(!st.year) return fail('Seleccione el año de residencia (R1, R2 o R3).');
+  Object.assign(st,{n1,a1,a2,uni,name:[n1,a1,a2].filter(Boolean).join(' ')});
+  buildExam();
+  const E=EXAMS[st.ex];
+  $('i-title').textContent = E.icono+' '+E.titulo;
+  $('i-who').textContent = st.name+' · '+st.year+' · '+st.uni;
+  $('i-parts').innerHTML = PARTS.map(p=>`<div class="part ${p.cls}"><span class="k">PARTE ${p.k}</span>
+     <div class="n">${p.nombre}</div><div class="d">${p.desc}</div>
+     <div class="w"><span>⏱ ${p.min} min</span><span>Peso ${Math.round(p.peso*100)} %</span></div></div>`).join('');
+  $('i-weights').innerHTML = PARTS.map(p=>`${p.corto} <b>${Math.round(p.peso*100)} %</b>`).join(' + ')+
+    ` · Tiempo total: <b>${PARTS.reduce((s,p)=>s+p.min,0)} min</b>.`;
+  window.onbeforeunload = e => { if(!st.sent){ e.preventDefault(); e.returnValue=''; } };
+  show('s-instr');
+}
+
+// ═══ CONSTRUCCIÓN ALEATORIA DEL EXAMEN ═══
+function pickSBA(bank){
+  // Reparto equilibrado: 3 por subtema y el resto al azar de subtemas distintos
+  const by={}; bank.forEach(q=>(by[q.s]=by[q.s]||[]).push(q));
+  const subs=Object.keys(by); let out=[], rest=[];
+  const base=Math.floor(N_SBA/subs.length);
+  subs.forEach(s=>{ const p=shuffle(by[s]); out=out.concat(p.slice(0,base)); rest.push(p.slice(base)); });
+  let extra=N_SBA-out.length; const order=shuffle(rest.map((r,i)=>i));
+  for(const i of order){ if(extra<=0) break; if(rest[i].length){ out.push(rest[i][0]); extra--; } }
+  return shuffle(out);
+}
+// Posición de la correcta repartida EXACTAMENTE por igual entre A–D (20 → 5 de cada una)
+function balance(qs){
+  let pos=[]; while(pos.length<qs.length) pos=pos.concat([0,1,2,3]);
+  pos=shuffle(pos.slice(0,qs.length));
+  return qs.map((q,i)=>{ const c=q.o[q.a], oth=shuffle(q.o.filter((_,j)=>j!==q.a)); const o=[];
+    for(let k=0,m=0;k<4;k++) o.push(k===pos[i]?c:oth[m++]); return {...q,o,a:pos[i],r:null}; });
+}
+function seqShuffle(n){ let p; do{ p=shuffle([...Array(n).keys()]); } while(p.every((v,i)=>v===i)); return p; }
+
+function buildExam(){
+  const E=EXAMS[st.ex];
+  const sba = balance(pickSBA(E.sba));
+  // B: 5 enunciados de 5 subtemas distintos (uno de los 2 del banco por subtema), 4 afirmaciones al azar de cada uno
+  const bySub={}; E.mtf.forEach(m=>(bySub[m.s]=bySub[m.s]||[]).push(m));
+  const mtf = shuffle(Object.keys(bySub)).slice(0,N_MTF_STEMS).map(s=>shuffle(bySub[s])[0])
+    .map(m=>({ s:m.s, tronco:m.tronco, items:shuffle(m.items).slice(0,N_MTF_ITEMS).map(x=>({t:x[0],v:x[1],e:x[2],r:null})) }));
+  // C: 2 temas al azar de los del banco
+  const emq = shuffle(E.emq).slice(0,N_EMQ).map(t=>{ const opc=shuffle(t.opciones); return { tema:t.tema, instr:t.instr, opc,
+      items:shuffle(t.items).map(x=>({t:x[0],ans:opc.indexOf(x[1]),e:x[2],r:''})) }; });
+  const seq = shuffle(E.seq).slice(0,N_SEQ).map(q=>({ titulo:q.titulo, instr:q.instr, pasos:q.pasos, e:q.e, ord:seqShuffle(q.pasos.length) }));
+  const calc = shuffle(E.calc).slice(0,N_CALC).map(c=>({...c, r:''}));
+  st.parts=[sba,mtf,emq,{seq,calc}];
+}
+
+// ═══ TEMPORIZADOR ═══
+function startTimer(sec){
+  clearInterval(st.timer); st.left=sec; st.total=sec; tick();
+  st.timer=setInterval(()=>{ st.left--; tick(); if(st.left<=0){ clearInterval(st.timer); closeModal(); submitPart(true); } },1000);
+}
+function tick(){
+  const c=$('p-clock'); c.textContent=fmt(Math.max(0,st.left));
+  c.className='clock'+(st.left<=60?' dang':st.left<=180?' warn':'');
+  $('p-tbar').style.width=(Math.max(0,st.left)/st.total*100)+'%';
+}
+
+// ═══ PARTES ═══
+function startPart(i){
+  st.pi=i; const P=PARTS[i];
+  document.documentElement.style.setProperty('--pc', P.color);
+  $('p-bar').style.setProperty('--pc',P.color);
+  $('p-title').textContent=`Parte ${P.k} · ${P.nombre}`;
+  $('p-who').textContent=`${st.name} · ${EXAMS[st.ex].titulo}`;
+  $('p-submit').textContent=`Entregar Parte ${P.k} →`;
+  st.cur=0; render(); show('s-part'); startTimer(P.min*60);
+}
+function render(){ ({sba:renderA,mtf:renderB,emq:renderC,dec:renderD})[PARTS[st.pi].tipo](); }
+
+// — Parte A —
+function renderA(){
+  const qs=st.parts[0], q=qs[st.cur];
+  $('p-body').innerHTML=`
+    <div class="qnav">${qs.map((x,i)=>`<button class="${x.r!==null?'ans':''} ${i===st.cur?'cur':''}" onclick="goA(${i})">${i+1}</button>`).join('')}</div>
+    <div class="qcard">
+      <div class="qmeta"><span class="pill k">Pregunta ${st.cur+1} de ${qs.length}</span><span class="pill">${esc(sub(q.s))}</span></div>
+      <div class="qtext">${esc(q.q)}</div>
+      ${q.o.map((o,i)=>`<button class="opt ${q.r===i?'sel':''}" onclick="pickA(${i})"><span class="L">${L4[i]}</span><span>${esc(o)}</span></button>`).join('')}
+      <div class="navrow">
+        <button class="btn line sm" onclick="goA(${st.cur-1})" ${st.cur===0?'disabled':''}>← Anterior</button><span class="sp"></span>
+        <button class="btn sm" onclick="goA(${st.cur+1})" ${st.cur===qs.length-1?'disabled':''}>Siguiente →</button>
+      </div>
+    </div>`;
+}
+function goA(i){ if(i<0||i>=st.parts[0].length) return; st.cur=i; renderA(); window.scrollTo(0,0); }
+function pickA(i){ st.parts[0][st.cur].r=i; renderA(); }
+
+// — Parte B —
+function renderB(){
+  let n=0;
+  $('p-body').innerHTML=st.parts[1].map((m,mi)=>`<div class="stem"><span class="pill" style="margin-bottom:8px">${esc(sub(m.s))}</span>
+     <h3>${mi+1}. ${esc(m.tronco)}</h3>
+     ${m.items.map((x,xi)=>{ n++; return `<div class="vf"><span class="n">${LET[xi].toLowerCase()})</span><span class="tx">${esc(x.t)}</span>
+       <span class="vfb"><button class="v ${x.r===true?'on':''}" onclick="pickB(${mi},${xi},true)">V</button><button class="f ${x.r===false?'on':''}" onclick="pickB(${mi},${xi},false)">F</button></span></div>`; }).join('')}
+   </div>`).join('');
+}
+function pickB(m,x,v){ st.parts[1][m].items[x].r=v; const y=window.scrollY; renderB(); window.scrollTo(0,y); }
+
+// — Parte C —
+function renderC(){
+  $('p-body').innerHTML=st.parts[2].map((t,ti)=>`<div class="emq"><h3>Tema ${ti+1}: ${esc(t.tema)}</h3><div class="ins">${esc(t.instr)}</div>
+    <div class="olist">${t.opc.map((o,i)=>`<div><b>${LET[i]}</b>${esc(o)}</div>`).join('')}</div>
+    ${t.items.map((x,xi)=>`<div class="eitem"><span class="tx"><b>${xi+1}.</b> ${esc(x.t)}</span>
+       <select class="${x.r!==''?'has':''}" onchange="pickC(${ti},${xi},this)"><option value="">—</option>${t.opc.map((o,i)=>`<option value="${i}" ${String(x.r)===String(i)?'selected':''}>${LET[i]}</option>`).join('')}</select></div>`).join('')}
+  </div>`).join('');
+}
+function pickC(t,x,el){ st.parts[2][t].items[x].r=el.value; el.classList.toggle('has', el.value!==''); }
+
+// — Parte D —
+function renderD(){
+  const D=st.parts[3];
+  $('p-body').innerHTML=D.seq.map((q,qi)=>`<div class="seq"><h3>Secuencia ${qi+1}: ${esc(q.titulo)}</h3><div class="ins">${esc(q.instr)} Use las flechas ▲ ▼ para mover cada paso.</div>
+     ${q.ord.map((pi,k)=>`<div class="srow"><span class="p">${k+1}</span><span class="tx">${esc(q.pasos[pi])}</span>
+       <span class="mv"><button onclick="mvD(${qi},${k},-1)" ${k===0?'disabled':''}>▲</button><button onclick="mvD(${qi},${k},1)" ${k===q.ord.length-1?'disabled':''}>▼</button></span></div>`).join('')}
+   </div>`).join('') +
+   D.calc.map((c,ci)=>`<div class="calc"><span class="pill" style="margin-bottom:8px">Cálculo ${ci+1}</span><div class="q">${esc(c.q)}</div>
+     <div class="row"><input type="text" inputmode="decimal" value="${esc(c.r)}" oninput="this.value=this.value.replace(/[^0-9.,-]/g,'');st.parts[3].calc[${ci}].r=this.value" placeholder="Número"><span class="u">${esc(c.unidad)}</span></div></div>`).join('');
+}
+function mvD(q,k,d){ const o=st.parts[3].seq[q].ord, j=k+d; if(j<0||j>=o.length) return; [o[k],o[j]]=[o[j],o[k]]; const y=window.scrollY; renderD(); window.scrollTo(0,y); }
+
+// ═══ ENTREGA ═══
+function pending(){
+  const t=PARTS[st.pi].tipo, P=st.parts[st.pi];
+  if(t==='sba') return P.filter(q=>q.r===null).length;
+  if(t==='mtf') return P.reduce((s,m)=>s+m.items.filter(x=>x.r===null).length,0);
+  if(t==='emq') return P.reduce((s,m)=>s+m.items.filter(x=>x.r==='').length,0);
+  return P.calc.filter(c=>isNaN(num(c.r))).length;
+}
+function askSubmit(){
+  const n=pending();
+  $('m-t').textContent=`¿Entregar la Parte ${PARTS[st.pi].k}?`;
+  $('m-s').innerHTML = n ? `Tiene <b>${n} ítem${n>1?'s':''} sin responder</b>, que contarán como incorrectos. Una vez entregada no podrá volver a esta parte.` : 'Una vez entregada no podrá volver a esta parte.';
+  $('modal').classList.add('on');
+}
+function closeModal(){ $('modal').classList.remove('on'); }
+
+function submitPart(byTime){
+  clearInterval(st.timer);
+  const P=PARTS[st.pi], D=st.parts[st.pi]; let ok=0, tot=0, html='';
+  const subStat=st.subStat||(st.subStat={});
+  const tally=(s,good)=>{ if(!s) return; subStat[s]=subStat[s]||[0,0]; subStat[s][1]++; if(good) subStat[s][0]++; };
+  if(P.tipo==='sba'){
+    D.forEach((q,i)=>{ const g=q.r===q.a; tot++; if(g) ok++; tally(q.s,g);
+      html+=rv(g,`${i+1}. ${esc(q.q)}`,`${q.r===null?'<b>Sin responder.</b> ':'Marcó <b>'+L4[q.r]+'</b>. '}Correcta: <b>${L4[q.a]}</b> — ${esc(q.o[q.a])}`,q.e,sub(q.s)); });
+  } else if(P.tipo==='mtf'){
+    D.forEach((m,mi)=>{ html+=`<h3 style="font-family:var(--h);font-weight:800;margin-top:20px">${mi+1}. ${esc(m.tronco)}</h3>`;
+      m.items.forEach((x,xi)=>{ const g=x.r===x.v; tot++; if(g) ok++; tally(m.s,g);
+        html+=rv(g,`${LET[xi].toLowerCase()}) ${esc(x.t)}`,`${x.r===null?'<b>Sin responder.</b> ':'Marcó <b>'+(x.r?'V':'F')+'</b>. '}Correcta: <b>${x.v?'VERDADERO':'FALSO'}</b>`,x.e); }); });
+  } else if(P.tipo==='emq'){
+    D.forEach((t,ti)=>{ html+=`<h3 style="font-family:var(--h);font-weight:800;margin-top:20px">Tema ${ti+1}: ${esc(t.tema)}</h3>`;
+      t.items.forEach((x,xi)=>{ const g=x.r!==''&&+x.r===x.ans; tot++; if(g) ok++;
+        html+=rv(g,`${xi+1}. ${esc(x.t)}`,`${x.r===''?'<b>Sin responder.</b> ':'Marcó <b>'+LET[+x.r]+'</b> ('+esc(t.opc[+x.r])+'). '}Correcta: <b>${LET[x.ans]}</b> — ${esc(t.opc[x.ans])}`,x.e); }); });
+  } else {
+    D.seq.forEach((q,qi)=>{ const n=q.pasos.length, good=q.ord.filter((v,k)=>v===k).length, frac=good/n; tot++; ok+=frac;
+      html+=rv(frac===1,`Secuencia ${qi+1}: ${esc(q.titulo)} — ${good}/${n} pasos en su lugar`,
+        '<b>Orden correcto:</b><br>'+q.pasos.map((p,k)=>`${k+1}. ${esc(p)} ${q.ord[k]===k?'✓':'✗ <i>(usted puso: '+esc(q.pasos[q.ord[k]])+')</i>'}`).join('<br>'),q.e); });
+    D.calc.forEach((c,ci)=>{ const v=num(c.r), g=!isNaN(v)&&Math.abs(v-c.ans)<=c.tol+1e-9; tot++; if(g) ok++;
+      html+=rv(g,`Cálculo ${ci+1}. ${esc(c.q)}`,`${isNaN(v)?'<b>Sin respuesta válida.</b> ':'Respondió <b>'+esc(c.r)+'</b>. '}Correcto: <b>${String(c.ans).replace('.',',')} ${esc(c.unidad)}</b>${c.tol?' (± '+String(c.tol).replace('.',',')+')':''}`,c.e); });
+  }
+  const sc=tot?ok/tot*5:0;
+  st.scores[P.k]={nota:sc, ok, tot}; st.timeouts[P.k]=byTime;
+  // Pantalla de revisión
+  $('r-bar').style.setProperty('--pc',P.color);
+  $('r-title').textContent=`Parte ${P.k} · ${P.nombre} — revisión`;
+  $('r-who').textContent=st.name;
+  $('r-timeout').style.display=byTime?'block':'none';
+  $('r-score').innerHTML=`<div class="s">Nota de la Parte ${P.k}</div><div class="v">${sc.toFixed(1)}</div><div class="s">${(Math.round(ok*100)/100).toString().replace('.',',')} / ${tot} aciertos · sobre 5,0 · peso ${Math.round(P.peso*100)} %</div>`;
+  $('r-body').innerHTML=html;
+  $('r-next').textContent = st.pi<PARTS.length-1 ? `Continuar a la Parte ${PARTS[st.pi+1].k}: ${PARTS[st.pi+1].nombre} →` : '🏆 Ver la nota final →';
+  show('s-review');
+}
+function rv(good,q,a,e,s){
+  return `<div class="rv"><div class="h"><span class="mk ${good?'ok':'bad'}">${good?'✓':'✗'}</span><div style="flex:1">
+    ${s?`<span class="tag2" style="background:var(--pc)">${esc(s)}</span> `:''}<div class="q">${q}</div><div class="a">${a}</div>${e?`<div class="e">${esc(e)}</div>`:''}</div></div></div>`;
+}
+function afterReview(){ if(st.pi<PARTS.length-1) startPart(st.pi+1); else showFinal(); }
+
+// ═══ RESULTADO FINAL ═══
+function showFinal(){
+  const E=EXAMS[st.ex];
+  const fin=PARTS.reduce((s,p)=>s+st.scores[p.k].nota*p.peso,0);
+  st.final=fin;
+  $('f-date').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  $('f-name').textContent=st.name;
+  $('f-meta').textContent=`${st.year} · ${st.uni} · ${E.titulo}`;
+  const fv=$('f-final'); fv.textContent=fin.toFixed(1);
+  $('f-grid').innerHTML=PARTS.map(p=>{const s=st.scores[p.k]; return `<div class="sbox ${p.cls}"><div class="k">Parte ${p.k} · ${Math.round(p.peso*100)} %</div>
+     <div class="v">${s.nota.toFixed(1)}</div><div class="x">${p.corto}${st.timeouts[p.k]?' · ⏰ por tiempo':''}</div></div>`;}).join('');
+  $('f-sub').innerHTML='<tr><th>Subtema (partes A y B)</th><th>Aciertos</th><th>%</th></tr>'+
+    Object.keys(E.subtemas).map(k=>{const v=(st.subStat||{})[k]||[0,0]; const pc=v[1]?Math.round(v[0]/v[1]*100):0;
+      return `<tr><td>${esc(E.subtemas[k])}</td><td>${v[0]} / ${v[1]}</td><td><b style="color:${pc>=60?'var(--green)':'var(--red)'}">${pc} %</b></td></tr>`;}).join('');
+  show('s-final');
+  if(!st.sent){ st.sent=true; window.onbeforeunload=null; enviarNota(); }
+}
+
+// ═══ ENVÍO AUTOMÁTICO AL GOOGLE SHEET ═══
+async function enviarNota(){
+  const box=$('sheet');
+  if(!/^https:\/\/script\.google\.com\//.test(SHEETS_URL)) return;
+  const set=(t,c,retry)=>{ box.innerHTML=`<span style="background:${c}">${t}</span>`+(retry?` <button class="btn sm line" style="margin-left:8px" onclick="enviarNota()">↻ Reintentar</button>`:''); };
+  const E=EXAMS[st.ex];
+  const payload={ action:'examen', clave:CLAVE_EXAMEN,
+    nombre:st.name, nombre1:st.n1, apellido1:st.a1, apellido2:st.a2,
+    universidad:st.uni, tipo:'Residentes · '+E.titulo, grupo:'Residente', anio:st.year, examen:E.id,
+    final:Number(st.final.toFixed(2)),
+    partes:Object.fromEntries(PARTS.map(p=>[p.k, Number(st.scores[p.k].nota.toFixed(2))])) };
+  set('⏳ Guardando la nota…','#FF7A00');
+  try{
+    const r=await fetch(SHEETS_URL,{method:'POST',body:JSON.stringify(payload)});
+    const d=await r.json(); if(!d.ok) throw new Error(d.error||'Error del servidor');
+    set('✓ Nota guardada en el Sheet'+(d.revisar?' · el docente revisará el nombre':''),'#00A651');
+  }catch(e){ set('✗ No se pudo guardar ('+e.message+')','#E10600',true); }
+}
+
+
+// ═══ PDF DE EVIDENCIA (compacto: carta, 2 columnas, letra pequeña, sin explicaciones) ═══
+function descargarPDF(){
+  const E=EXAMS[st.ex], ok='<b class="g">✓</b>', no='<b class="r">✗</b>';
+  const fecha=new Date().toLocaleString('es-CO',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const sec=(k,t)=>`<h2>Parte ${k} · ${t} — nota ${st.scores[k].nota.toFixed(1)} (${String(Math.round(st.scores[k].ok*100)/100).replace('.',',')}/${st.scores[k].tot})</h2>`;
+  let h='';
+  // A
+  h+=sec('A',PARTS[0].nombre);
+  st.parts[0].forEach((q,i)=>{ const g=q.r===q.a;
+    h+=`<div class="it">${g?ok:no} <b>${i+1}.</b> ${esc(q.q)}<div class="rp">Marcó: <b>${q.r===null?'— (sin responder)':L4[q.r]+'. '+esc(q.o[q.r])}</b>${g?'':` · Correcta: <b>${L4[q.a]}. ${esc(q.o[q.a])}</b>`}</div></div>`; });
+  // B
+  h+=sec('B',PARTS[1].nombre);
+  st.parts[1].forEach((m,mi)=>{ h+=`<div class="tr">${mi+1}. ${esc(m.tronco)}</div>`;
+    m.items.forEach((x,xi)=>{ const g=x.r===x.v;
+      h+=`<div class="it">${g?ok:no} ${LET[xi].toLowerCase()}) ${esc(x.t)} <span class="rp">[Marcó: <b>${x.r===null?'—':(x.r?'V':'F')}</b>${g?'':' · Correcta: <b>'+(x.v?'V':'F')+'</b>'}]</span></div>`; }); });
+  // C
+  h+=sec('C',PARTS[2].nombre);
+  st.parts[2].forEach((t,ti)=>{ h+=`<div class="tr">Tema ${ti+1}: ${esc(t.tema)}</div>`;
+    t.items.forEach((x,xi)=>{ const g=x.r!==''&&+x.r===x.ans;
+      h+=`<div class="it">${g?ok:no} ${xi+1}. ${esc(x.t)}<div class="rp">Marcó: <b>${x.r===''?'— (sin responder)':esc(t.opc[+x.r])}</b>${g?'':' · Correcta: <b>'+esc(t.opc[x.ans])+'</b>'}</div></div>`; }); });
+  // D
+  h+=sec('D',PARTS[3].nombre);
+  st.parts[3].seq.forEach((q,qi)=>{ const n=q.pasos.length, gd=q.ord.filter((v,k)=>v===k).length;
+    h+=`<div class="it">${gd===n?ok:no} <b>Secuencia ${qi+1}:</b> ${esc(q.titulo)} — ${gd}/${n} en su lugar<div class="rp">`+
+      q.ord.map((pi,k)=>`${k+1}. ${esc(q.pasos[pi])} ${pi===k?'✓':'✗ (correcto: '+esc(q.pasos[k])+')'}`).join('<br>')+'</div></div>'; });
+  st.parts[3].calc.forEach((c,ci)=>{ const v=num(c.r), g=!isNaN(v)&&Math.abs(v-c.ans)<=c.tol+1e-9;
+    h+=`<div class="it">${g?ok:no} <b>Cálculo ${ci+1}.</b> ${esc(c.q)}<div class="rp">Respondió: <b>${c.r===''?'—':esc(c.r)}</b>${g?'':' · Correcto: <b>'+String(c.ans).replace('.',',')+' '+esc(c.unidad)+'</b>'}</div></div>`; });
+
+  const notas=PARTS.map(p=>`<td>Parte ${p.k} (${Math.round(p.peso*100)} %)<br><b>${st.scores[p.k].nota.toFixed(1)}</b>${st.timeouts[p.k]?' ⏰':''}</td>`).join('');
+  const titulo=('Evidencia_'+E.corto+'_'+st.name).replace(/\s+/g,'_');
+  const doc=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${esc(titulo)}</title><style>
+    @page{size:letter;margin:9mm 10mm}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,Helvetica,sans-serif;font-size:7.2pt;line-height:1.22;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .hd{display:flex;justify-content:space-between;gap:10px;border-bottom:2px solid #000;padding-bottom:4px;margin-bottom:5px}
+    .hd .t{font-size:11pt;font-weight:bold}
+    table{width:100%;border-collapse:collapse;margin-bottom:6px;text-align:center}
+    td{border:1px solid #000;padding:2px 3px;font-size:7.5pt}
+    td.f{background:${E.color};color:#fff;font-size:9pt}
+    .cols{column-count:2;column-gap:12px;column-rule:1px solid #000}
+    h2{font-size:8pt;background:#000;color:#fff;padding:2px 5px;margin:5px 0 3px;break-after:avoid}
+    .tr{font-weight:bold;margin:3px 0 1px;break-after:avoid}
+    .it{padding:2px 0;border-bottom:1px dotted #000;break-inside:avoid}
+    .rp{margin-left:11px}
+    .g{color:#00A651}.r{color:#E10600}
+    .ft{margin-top:6px;border-top:1px solid #000;padding-top:3px;font-size:6.5pt;display:flex;justify-content:space-between}
+  </style></head><body>
+  <div class="hd"><div><div class="t">EVIDENCIA DE EXAMEN · ${esc(E.titulo.toUpperCase())}</div>
+    Residentes de anestesiología · Subred Integrada de Servicios de Salud Suroccidente</div>
+    <div style="text-align:right">${esc(fecha)}<br>Coordinador: Dr. Geovanni Rodríguez</div></div>
+  <table><tr><td style="text-align:left"><b>${esc(st.name)}</b><br>${esc(st.year)} · ${esc(st.uni)}</td>${notas}<td class="f">NOTA FINAL<br><b>${st.final.toFixed(1)}</b> / 5,0</td></tr></table>
+  <div class="cols">${h}</div>
+  <div class="ft"><span>✓ correcta · ✗ incorrecta o sin responder · ⏰ parte cerrada por tiempo</span><span>Firma del residente: ____________________</span><span>Firma del coordinador: ____________________</span></div>
+  <div class="ft" style="border:none;justify-content:center">© 2026 Dr. Andrés Robayo C., autor de la aplicación y del banco de preguntas · Todos los derechos reservados (Ley 23 de 1982)</div>
+  </body></html>`;
+  let fr=document.getElementById('pdf-frame'); if(fr) fr.remove();
+  fr=document.createElement('iframe'); fr.id='pdf-frame';
+  fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+  document.body.appendChild(fr);
+  const d=fr.contentWindow.document; d.open(); d.write(doc); d.close();
+  const old=document.title; document.title=titulo;
+  setTimeout(()=>{ fr.contentWindow.focus(); fr.contentWindow.print(); setTimeout(()=>document.title=old,1500); },300);
+  return doc;
+}
+
+initSetup();
+</script>
+</body>
+</html>

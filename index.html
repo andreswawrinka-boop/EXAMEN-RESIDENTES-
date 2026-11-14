@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Examen de Residentes · Anestesiología Kennedy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1026;--blue:#1946C8;--blue2:#2B6CFF;--teal:#00897B;--line:#D5DDF2}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;display:flex;flex-direction:column;font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:#F7F9FF;-webkit-font-smoothing:antialiased}
+.bar{height:6px;background:linear-gradient(90deg,var(--blue),var(--teal))}
+.wrap{width:min(980px,100% - 40px);margin:0 auto}
+
+/* barra superior */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:24px 0}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:16px}
+.brand-mark{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--blue);color:#fff;font-size:19px}
+.brand small{display:block;font-size:12px;font-weight:600;color:var(--blue)}
+.tag{font-size:12px;font-weight:700;padding:7px 13px;border-radius:8px;background:var(--blue);color:#fff;letter-spacing:.3px}
+
+/* tarjeta principal */
+.hero{margin:40px auto 0;max-width:720px;display:grid;grid-template-columns:1fr;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 40px -22px rgba(25,70,200,.35);overflow:hidden}
+.left{padding:52px 56px;text-align:center}.left .rule{margin-left:auto;margin-right:auto}.left .lead{margin:0 auto}.left .topics{justify-content:center}
+.kicker{font-size:12.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--teal)}
+h1{font-family:'Source Serif 4',Georgia,serif;font-size:clamp(38px,5vw,56px);line-height:1.05;font-weight:700;letter-spacing:-.01em;margin:12px 0 14px;color:var(--ink)}
+h1 span{color:var(--blue)}
+.rule{width:64px;height:4px;border-radius:2px;background:var(--teal);margin-bottom:18px}
+.lead{font-size:16.5px;font-weight:500;line-height:1.6;max-width:44ch}
+.topics{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 30px}
+.topic{font-weight:600;font-size:13.5px;color:var(--blue);padding:8px 14px;border-radius:8px;border:1.5px solid var(--blue);background:#fff}
+.cta{display:inline-flex;align-items:center;gap:12px;text-decoration:none;font-weight:700;font-size:17px;color:#fff;background:var(--blue);padding:15px 26px;border-radius:10px;transition:background .2s,transform .2s}
+.cta span{transition:transform .2s}
+.cta:hover{background:var(--blue2)}
+.cta:hover span{transform:translateX(4px)}
+.cta:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+
+.right{background:var(--blue);color:#fff;padding:40px 34px;display:flex;flex-direction:column;gap:18px}
+.right h3{font-size:13px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase}
+.stats{display:flex;gap:28px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.35)}
+.stat strong{display:block;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1;font-weight:700}
+.stat span{font-size:13px;font-weight:600}
+.rules{list-style:none;display:flex;flex-direction:column;gap:12px;font-size:14px;font-weight:500;line-height:1.45}
+.rules li{display:flex;gap:10px}
+.rules li::before{content:'';flex:0 0 6px;height:6px;margin-top:8px;border-radius:50%;background:#fff}
+
+/* universidades */
+.unis{margin-top:34px}
+.unis h4{font-size:12.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.uni-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.uni{font-weight:600;font-size:14px;padding:14px 16px;border-radius:10px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue)}
+
+/* pie */
+footer{margin-top:auto;padding-top:56px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-end;padding:22px 0 28px;border-top:1px solid var(--line);font-size:13px;font-weight:500}
+.cred b{font-weight:700}
+.cred div+div{margin-top:4px}
+.rights{text-align:right;line-height:1.6}
+
+@media(max-width:860px){
+  .hero{grid-template-columns:1fr}
+  .left{padding:30px 24px}.right{padding:28px 24px}
+  .cta{width:100%;justify-content:center}
+  .uni-row{grid-template-columns:1fr 1fr}
+  .tag{display:none}
+  footer .wrap{flex-direction:column;align-items:flex-start}.rights{text-align:left}
+}
+@media(max-width:480px){.uni-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bar"></div>
+<div class="wrap">
+  <nav class="top">
+    <div class="brand"><div class="brand-mark" aria-hidden="true">🩺</div><div>Anestesiología · Hospital de Kennedy<small>Subred Integrada de Servicios de Salud Suroccidente</small></div></div>
+    <span class="tag">Posgrado · Fin de rotación</span>
+  </nav>
+
+  <section class="hero">
+    <div class="left">
+      <div class="kicker">Residentes de posgrado</div>
+      <h1>Examen de <span>Residentes</span></h1>
+      <div class="rule"></div>
+      <p class="lead">Evaluación final de la rotación de 2 meses en Anestesiología del Hospital de Kennedy.</p>
+      <div class="topics">
+        <span class="topic">Anestesia obstétrica y ginecológica</span>
+        <span class="topic">Anestesia en trauma</span>
+      </div>
+      <a class="cta" href="examen_residentes.html">Comenzar el examen <span>→</span></a>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="cred">
+      <div><b>Coordinador del posgrado:</b> Dr. Geovanni Rodríguez</div>
+      <div><b>Autor de la aplicación:</b> Dr. Andrés Robayo Conde · Especialista en Anestesiología y Reanimación</div>
+    </div>
+    <div class="rights">© <span class="yr">2026</span> · Todos los derechos reservados<br>Anestesiología · Hospital de Kennedy</div>
+  </div>
+</footer>
+<script>document.querySelectorAll('.yr').forEach(e=>{e.textContent=new Date().getFullYear();});</script>
+</body>
+</html>
